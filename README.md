@@ -29,8 +29,10 @@ Copy `.env.example` to `.env`:
 3. **Publish directory:** `dist`
 4. **Node version:** `20` (Dashboard → Environment → `NODE_VERSION=20`)
 5. **Environment variables** (set **before** each build — they are compiled into JS):
-   - `EXPO_PUBLIC_API_URL` — e.g. `https://jctrade-server.onrender.com/api`
-   - `EXPO_PUBLIC_GOOGLE_CLIENT_ID` — same Web client ID as local
+   - `EXPO_PUBLIC_API_URL` — **must** include `/api`, e.g. `https://jctrade-server-1.onrender.com/api`
+   - `EXPO_PUBLIC_GOOGLE_CLIENT_ID` — same Web client ID as local  
+
+   This repo includes **`.env.production`** with the production API URL (`https://jctrade-server-1.onrender.com/api`). The `build` script sets **`NODE_ENV=production`** so Expo loads `.env` then overlays `.env.production` values (Render **Environment** variables override file-based ones if present).
 6. **HTTP headers (Google popup):** For path `/*`, set `Cross-Origin-Opener-Policy: same-origin-allow-popups` and `Cross-Origin-Embedder-Policy: unsafe-none`. Repo `render.yaml` includes these for Blueprint deployments; otherwise add them under Static Site → **Headers** in the Render dashboard.
 
 7. In **Google Cloud Console**, under your Web OAuth client → **Authorized JavaScript origins**, add your live URL, e.g. `https://jctrade-web.onrender.com`.
@@ -43,14 +45,14 @@ Copy `.env.example` to `.env`:
 |--------|--------|
 | **React hydration #418** on login | GSI iframe vs static HTML mismatch — fixed by mounting `GoogleLogin` only after mount (included in codebase). Redeploy. |
 | **COOP / postMessage** warnings | Hosted HTML must send `Cross-Origin-Opener-Policy: same-origin-allow-popups` (see headers above). `metro.config.js` only applies to `expo start`, not production `dist/`. |
-| **`localhost:4000` ERR_CONNECTION_REFUSED** on deployed site | Build omitted `EXPO_PUBLIC_API_URL`. Set it to `https://jctrade-server.onrender.com/api` and **rebuild** the static site. |
+| **`localhost:4000` ERR_CONNECTION_REFUSED** on deployed site | Production URL not in bundle: add **`EXPO_PUBLIC_API_URL`** in Render env **or** keep **`.env.production`** (`https://jctrade-server-1.onrender.com/api`). Use `npm run build` (forces `NODE_ENV=production`). **Redeploy.** |
 | **GSI initialize multiple times** | Harmless in React Strict Mode (dev). Production should log once. |
 
 
 ## Build output
 
 ```bash
-npm run build   # creates ./dist (static HTML/JS)
+npm run build   # NODE_ENV=production + clears Metro cache so EXPO_PUBLIC_* is fresh
 ```
 
-`dist/` is gitignored; Render builds it on each deploy.
+`dist/` is gitignored; Render builds it on each deploy. If you change API URL in `.env.production` and the bundle still calls `localhost`, run `npm run build` again (the script uses `--clear`).
