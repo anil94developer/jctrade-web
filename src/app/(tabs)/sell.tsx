@@ -1,7 +1,6 @@
 import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -16,10 +15,12 @@ import { useFocusEffect } from '@react-navigation/native';
 import * as Clipboard from 'expo-clipboard';
 
 import { MaintenanceBanner } from '@/components/maintenance-banner';
+import { useToast } from '@/context/toast-context';
 import { api, getPublicSettings, type PublicSettings } from '@/lib/api';
 import { JC } from '@/constants/jc-theme';
 
 export default function SellScreen() {
+  const toast = useToast();
   const [settings, setSettings] = useState<PublicSettings | null>(null);
   const [settingsError, setSettingsError] = useState('');
   const [settingsLoading, setSettingsLoading] = useState(true);
@@ -38,11 +39,13 @@ export default function SellScreen() {
         setSettingsError('');
       })
       .catch((e) => {
+        const msg = e instanceof Error ? e.message : 'Failed to load settings';
         setSettings(null);
-        setSettingsError(e instanceof Error ? e.message : 'Failed to load settings');
+        setSettingsError(msg);
+        toast.showError(msg);
       })
       .finally(() => setSettingsLoading(false));
-  }, []);
+  }, [toast]);
 
   useFocusEffect(
     useCallback(() => {
@@ -52,24 +55,29 @@ export default function SellScreen() {
 
   async function copyAddress() {
     if (!settings?.walletAddress) {
-      Alert.alert('Not set', 'Admin has not set wallet address yet');
+      toast.showError('Admin has not set wallet address yet');
       return;
     }
     try {
       await Clipboard.setStringAsync(settings.walletAddress);
-      Alert.alert('Copied', 'Wallet address copied to clipboard');
+      toast.showSuccess('Wallet address copied');
     } catch {
-      Alert.alert('Wallet address', settings.walletAddress);
+      toast.showInfo(settings.walletAddress);
     }
   }
 
   async function handleSubmit() {
     if (settings?.maintenanceMode) {
-      Alert.alert('Maintenance', 'System is under maintenance. Try again later.');
+      toast.showError('System is under maintenance. Try again later.');
       return;
     }
     if (!transactionHash.trim() || !name.trim() || !value.trim() || !upiId.trim()) {
-      Alert.alert('Required', 'Fill all fields: transaction hash, name, value, UPI ID');
+      toast.showError('Fill all fields: transaction hash, name, value, UPI ID');
+      return;
+    }
+    const amount = Number(value);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      toast.showError('Enter a valid amount in ₹');
       return;
     }
     setLoading(true);
@@ -79,17 +87,17 @@ export default function SellScreen() {
         body: JSON.stringify({
           transactionHash: transactionHash.trim(),
           name: name.trim(),
-          value: Number(value),
+          value: amount,
           upiId: upiId.trim(),
         }),
       });
-      Alert.alert('Submitted', 'Your sell USDT request was sent to admin.');
+      toast.showSuccess('Sell request submitted successfully');
       setTransactionHash('');
       setName('');
       setValue('');
       setUpiId('');
     } catch (err) {
-      Alert.alert('Error', err instanceof Error ? err.message : 'Failed');
+      toast.showError(err instanceof Error ? err.message : 'Failed to submit request');
     } finally {
       setLoading(false);
     }

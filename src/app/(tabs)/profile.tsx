@@ -1,13 +1,15 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useAuth } from '@/context/auth-context';
+import { useToast } from '@/context/toast-context';
 import { JC } from '@/constants/jc-theme';
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
+  const toast = useToast();
   const [loggingOut, setLoggingOut] = useState(false);
   const initial = (user?.name || user?.email || 'U').charAt(0).toUpperCase();
 
@@ -16,12 +18,13 @@ export default function ProfileScreen() {
     setLoggingOut(true);
     try {
       await signOut();
+      toast.showSuccess('Logged out');
       if (router.canDismiss?.()) {
         router.dismissAll();
       }
       router.replace('/login');
     } catch {
-      Alert.alert('Logout failed', 'Please try again');
+      toast.showError('Logout failed. Please try again');
     } finally {
       setLoggingOut(false);
     }

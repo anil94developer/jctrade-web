@@ -5,7 +5,6 @@ import { router } from 'expo-router';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Platform,
   Pressable,
   StyleSheet,
@@ -17,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { JcLogo } from '@/components/jc-logo';
 import { MobileShell } from '@/components/mobile-shell';
 import { useAuth } from '@/context/auth-context';
+import { useToast } from '@/context/toast-context';
 import { api, type User } from '@/lib/api';
 import { GOOGLE_CLIENT_ID, getNativeRedirectUri } from '@/lib/google-auth';
 import { JC } from '@/constants/jc-theme';
@@ -39,6 +39,7 @@ export default function LoginScreen() {
 
 function useGoogleSignIn() {
   const { signIn, token } = useAuth();
+  const toast = useToast();
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -61,19 +62,15 @@ function useGoogleSignIn() {
           body: JSON.stringify({ idToken, credential: idToken }),
         });
         await signIn(data.token, data.user);
+        toast.showSuccess('Login successful');
         goHome();
       } catch (err) {
-        const msg = err instanceof Error ? err.message : 'Login failed';
-        if (Platform.OS === 'web') {
-          alert(`Login failed: ${msg}`);
-        } else {
-          Alert.alert('Login failed', msg);
-        }
+        toast.showError(err instanceof Error ? err.message : 'Login failed');
       } finally {
         setLoading(false);
       }
     },
-    [signIn, loading, goHome]
+    [signIn, loading, goHome, toast]
   );
 
   return { loading, handleGoogleToken };
@@ -81,6 +78,7 @@ function useGoogleSignIn() {
 
 function WebLogin() {
   const { loading, handleGoogleToken } = useGoogleSignIn();
+  const toast = useToast();
   const handledRef = useRef(false);
   const origins = getWebOrigins();
   /** GSI injects DOM that never matches SSR — mount only after hydration. */
@@ -99,15 +97,15 @@ function WebLogin() {
             onSuccess={(res) => {
               if (handledRef.current) return;
               if (!res.credential) {
-                alert('No credential from Google. Check Authorized JavaScript origins in Google Console.');
+                toast.showError('Google sign-in failed. Check Authorized JavaScript origins in Google Console.');
                 return;
               }
               handledRef.current = true;
               handleGoogleToken(res.credential);
             }}
             onError={() => {
-              alert(
-                `Google blocked this site.\n\nAdd ALL of these under OAuth → Web client → Authorized JavaScript origins:\n\n${origins.join('\n')}\n\nFor local dev use http://localhost:8081. For production add your live site URL.`
+              toast.showError(
+                `Google blocked this site. Add origins in Console: ${origins.join(', ')}`
               );
             }}
             useOneTap={false}

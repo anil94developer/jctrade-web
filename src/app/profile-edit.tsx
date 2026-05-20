@@ -2,7 +2,6 @@ import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -16,11 +15,13 @@ import {
 import { StackHeader } from '@/components/stack-header';
 import { MobileShell } from '@/components/mobile-shell';
 import { useAuth } from '@/context/auth-context';
+import { useToast } from '@/context/toast-context';
 import { api } from '@/lib/api';
 import { JC } from '@/constants/jc-theme';
 
 export default function ProfileEditScreen() {
   const { user, refreshUser } = useAuth();
+  const toast = useToast();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [upiId, setUpiId] = useState('');
@@ -40,10 +41,10 @@ export default function ProfileEditScreen() {
         body: JSON.stringify({ name, phone, upiId }),
       });
       await refreshUser();
-      Alert.alert('Saved', 'Profile updated');
+      toast.showSuccess('Profile saved successfully');
       router.back();
     } catch (err) {
-      Alert.alert('Error', err instanceof Error ? err.message : 'Failed');
+      toast.showError(err instanceof Error ? err.message : 'Failed to save profile');
     } finally {
       setLoading(false);
     }

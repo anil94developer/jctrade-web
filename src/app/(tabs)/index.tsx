@@ -124,6 +124,7 @@ export default function HomeScreen() {
             → Wallet History
           </Text>
         </View>
+
       </ScrollView>
     </SafeAreaView>
   );
@@ -131,7 +132,7 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: JC.white },
-  scroll: { padding: 16,  },
+  scroll: { padding: 16, paddingBottom: 100 },
   header: { marginBottom: 16 },
   logo: { fontSize: 26, fontWeight: '800', fontStyle: 'italic', color: JC.black },
   banner: {

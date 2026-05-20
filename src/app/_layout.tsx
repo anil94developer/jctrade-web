@@ -6,6 +6,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { GoogleProvider } from '@/components/google-provider';
 import { AuthProvider, useAuth } from '@/context/auth-context';
+import { ToastProvider } from '@/context/toast-context';
 import { JC } from '@/constants/jc-theme';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -40,6 +41,7 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <GoogleProvider>
         <AuthProvider>
+          <ToastProvider>
           <AuthNavigationGuard />
         <StatusBar style="dark" />
         <Stack
@@ -55,6 +57,7 @@ export default function RootLayout() {
         <Stack.Screen name="transaction/[id]" options={{ presentation: 'card' }} />
         <Stack.Screen name="profile-edit" options={{ presentation: 'card' }} />
       </Stack>
+          </ToastProvider>
         </AuthProvider>
       </GoogleProvider>
     </SafeAreaProvider>
