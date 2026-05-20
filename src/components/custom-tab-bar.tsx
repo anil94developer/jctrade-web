@@ -1,18 +1,19 @@
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { JC } from '@/constants/jc-theme';
 
-type TabIconName = keyof typeof Ionicons.glyphMap;
-
-const TAB_CONFIG: Record<string, { label: string; icon: TabIconName; iconActive: TabIconName }> = {
-  index: { label: 'Home', icon: 'home-outline', iconActive: 'home' },
-  sell: { label: 'Sell', icon: 'swap-horizontal-outline', iconActive: 'swap-horizontal' },
-  wallet: { label: 'UPI', icon: 'card-outline', iconActive: 'card' },
-  support: { label: 'Support', icon: 'headset-outline', iconActive: 'headset' },
-  profile: { label: 'My', icon: 'person-circle-outline', iconActive: 'person-circle' },
+/**
+ * Tab glyphs use emoji + normal Text (system font). Ionicons needs Ionicons.ttf;
+ * on some static hosts / CDNs that font can 404 or load after paint, so icons vanish.
+ */
+const TAB_CONFIG: Record<string, { label: string; glyph: string }> = {
+  index: { label: 'Home', glyph: '🏠' },
+  sell: { label: 'Sell', glyph: '💱' },
+  wallet: { label: 'UPI', glyph: '💳' },
+  support: { label: 'Support', glyph: '🎧' },
+  profile: { label: 'My', glyph: '👤' },
 };
 
 export const TAB_BAR_HEIGHT = 62;
@@ -29,8 +30,7 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
           const focused = state.index === index;
           const config = TAB_CONFIG[route.name] ?? {
             label: route.name,
-            icon: 'ellipse-outline' as TabIconName,
-            iconActive: 'ellipse' as TabIconName,
+            glyph: '•',
           };
 
           const onPress = () => {
@@ -53,11 +53,12 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
               accessibilityState={focused ? { selected: true } : {}}
               accessibilityLabel={config.label}>
               <View style={[styles.iconWrap, focused && styles.iconWrapActive]}>
-                <Ionicons
-                  name={focused ? config.iconActive : config.icon}
-                  size={24}
-                  color={focused ? JC.black : JC.gray}
-                />
+                <Text
+                  style={[styles.tabGlyph, { opacity: focused ? 1 : 0.55 }]}
+                  accessibilityElementsHidden
+                  importantForAccessibility="no">
+                  {config.glyph}
+                </Text>
               </View>
               <Text style={[styles.label, focused && styles.labelActive]} numberOfLines={1}>
                 {config.label}
@@ -99,6 +100,11 @@ const styles = StyleSheet.create({
   },
   iconWrapActive: {
     backgroundColor: JC.yellow,
+  },
+  tabGlyph: {
+    fontSize: 22,
+    lineHeight: 26,
+    textAlign: 'center',
   },
   label: {
     fontSize: 11,
