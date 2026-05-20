@@ -1,0 +1,115 @@
+import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import { Ionicons } from '@expo/vector-icons';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { JC } from '@/constants/jc-theme';
+
+type TabIconName = keyof typeof Ionicons.glyphMap;
+
+const TAB_CONFIG: Record<string, { label: string; icon: TabIconName; iconActive: TabIconName }> = {
+  index: { label: 'Home', icon: 'home-outline', iconActive: 'home' },
+  sell: { label: 'Sell', icon: 'swap-horizontal-outline', iconActive: 'swap-horizontal' },
+  wallet: { label: 'UPI', icon: 'card-outline', iconActive: 'card' },
+  support: { label: 'Support', icon: 'headset-outline', iconActive: 'headset' },
+  profile: { label: 'My', icon: 'person-circle-outline', iconActive: 'person-circle' },
+};
+
+export const TAB_BAR_HEIGHT = 62;
+
+export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
+  const insets = useSafeAreaInsets();
+  const bottomInset = Math.max(insets.bottom, 10);
+  const barHeight = TAB_BAR_HEIGHT + bottomInset;
+
+  return (
+    <View style={[styles.wrapper, { height: barHeight, paddingBottom: bottomInset }]}>
+      <View style={styles.bar}>
+        {state.routes.map((route, index) => {
+          const focused = state.index === index;
+          const config = TAB_CONFIG[route.name] ?? {
+            label: route.name,
+            icon: 'ellipse-outline' as TabIconName,
+            iconActive: 'ellipse' as TabIconName,
+          };
+
+          const onPress = () => {
+            const event = navigation.emit({
+              type: 'tabPress',
+              target: route.key,
+              canPreventDefault: true,
+            });
+            if (!focused && !event.defaultPrevented) {
+              navigation.navigate(route.name, route.params);
+            }
+          };
+
+          return (
+            <Pressable
+              key={route.key}
+              onPress={onPress}
+              style={styles.tab}
+              accessibilityRole="button"
+              accessibilityState={focused ? { selected: true } : {}}
+              accessibilityLabel={config.label}>
+              <View style={[styles.iconWrap, focused && styles.iconWrapActive]}>
+                <Ionicons
+                  name={focused ? config.iconActive : config.icon}
+                  size={24}
+                  color={focused ? JC.black : JC.gray}
+                />
+              </View>
+              <Text style={[styles.label, focused && styles.labelActive]} numberOfLines={1}>
+                {config.label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  wrapper: {
+    backgroundColor: JC.white,
+    borderTopWidth: 1,
+    borderTopColor: JC.grayBorder,
+    width: '100%',
+  },
+  bar: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingTop: 8,
+  },
+  tab: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    paddingHorizontal: 2,
+    minHeight: 54,
+  },
+  iconWrap: {
+    width: 40,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 16,
+  },
+  iconWrapActive: {
+    backgroundColor: JC.yellow,
+  },
+  label: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: JC.gray,
+    marginTop: 4,
+    textAlign: 'center',
+    width: '100%',
+  },
+  labelActive: {
+    color: JC.black,
+    fontWeight: '700',
+  },
+});

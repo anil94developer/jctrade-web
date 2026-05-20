@@ -1,16 +1,62 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import React from 'react';
-import { useColorScheme } from 'react-native';
+import { Stack, useRouter, useSegments } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
+import { StatusBar } from 'expo-status-bar';
+import { useEffect } from 'react';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
+import { GoogleProvider } from '@/components/google-provider';
+import { AuthProvider, useAuth } from '@/context/auth-context';
+import { JC } from '@/constants/jc-theme';
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+SplashScreen.preventAutoHideAsync().catch(() => {});
+
+const PROTECTED_SEGMENTS = new Set(['(tabs)', 'wallet-history', 'transactions', 'transaction', 'profile-edit']);
+
+function AuthNavigationGuard() {
+  const { token, loading } = useAuth();
+  const segments = useSegments();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (loading) return;
+    const root = segments[0];
+    if (!token && root && PROTECTED_SEGMENTS.has(root)) {
+      router.replace('/login');
+    }
+    if (token && root === 'login') {
+      router.replace('/(tabs)');
+    }
+  }, [token, loading, segments, router]);
+
+  return null;
+}
+
+export default function RootLayout() {
+  useEffect(() => {
+    SplashScreen.hideAsync().catch(() => {});
+  }, []);
+
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
-    </ThemeProvider>
+    <SafeAreaProvider>
+      <GoogleProvider>
+        <AuthProvider>
+          <AuthNavigationGuard />
+        <StatusBar style="dark" />
+        <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: JC.white },
+        }}>
+        <Stack.Screen name="index" />
+        <Stack.Screen name="login" />
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="wallet-history" options={{ presentation: 'card' }} />
+        <Stack.Screen name="transactions" options={{ presentation: 'card' }} />
+        <Stack.Screen name="transaction/[id]" options={{ presentation: 'card' }} />
+        <Stack.Screen name="profile-edit" options={{ presentation: 'card' }} />
+      </Stack>
+        </AuthProvider>
+      </GoogleProvider>
+    </SafeAreaProvider>
   );
 }

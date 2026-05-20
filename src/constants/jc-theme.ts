@@ -1,0 +1,15 @@
+export const JC = {
+  yellow: '#FFD400',
+  yellowLight: '#FFF9C4',
+  yellowDark: '#E6BF00',
+  black: '#111111',
+  white: '#FFFFFF',
+  gray: '#888888',
+  grayLight: '#F5F5F5',
+  grayBorder: '#E8E8E8',
+  orange: '#FF8C00',
+  green: '#2E7D32',
+  red: '#E53935',
+  blue: '#1976D2',
+  maxWidth: 430,
+} as const;
