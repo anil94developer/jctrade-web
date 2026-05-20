@@ -18,17 +18,22 @@ body {
   min-height: 100dvh;
 }
 
-/* Bottom tab bar — portaled to body on web; must use real CSS for mobile Safari/Chrome */
+/* Portaled tab bar — no transform (Android breaks fixed + translate); center with margin */
 #jc-tab-bar {
   position: fixed !important;
   bottom: 0 !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
+  left: 0 !important;
+  right: 0 !important;
   width: 100% !important;
   max-width: 430px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
   z-index: 2147483646 !important;
   box-sizing: border-box !important;
-  -webkit-transform: translateX(-50%) !important;
+  transform: none !important;
+  -webkit-transform: none !important;
   box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.08) !important;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
 }

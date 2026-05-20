@@ -25,16 +25,20 @@ const TAB_CONFIG: Record<string, { label: string; Icon: IconRender }> = {
 
 export const TAB_BAR_HEIGHT = 62;
 
+/** Total bottom chrome height (bar + safe area) for screen padding. */
+export function getTabBarTotalHeight(insetsBottom = 0) {
+  return TAB_BAR_HEIGHT + Math.max(insetsBottom, 8);
+}
+
 export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
-  const bottomInset = Math.max(insets.bottom, 10);
-  const barHeight = TAB_BAR_HEIGHT + bottomInset;
+  const safeBottom = Math.max(insets.bottom, 8);
+  const barHeight = getTabBarTotalHeight(insets.bottom);
 
   const bar = (
     <View
-      // Pinned via global.css on mobile web (portal avoids parent transform breaking fixed)
       nativeID="jc-tab-bar"
-      style={[styles.wrapper, { height: barHeight, paddingBottom: bottomInset }]}>
+      style={[styles.wrapper, { height: barHeight, paddingBottom: safeBottom }]}>
       <View style={styles.bar}>
         {state.routes.map((route, index) => {
           const focused = state.index === index;
@@ -75,15 +79,28 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
     </View>
   );
 
-  // Live mobile browsers: fixed tab bar inside RN tree often renders off-screen (ancestor transform).
+  // Web: render bar on document.body; collapse in-nav slot so Android doesn't show a blank box.
   if (Platform.OS === 'web' && typeof document !== 'undefined') {
-    return createPortal(bar, document.body);
+    return (
+      <>
+        {createPortal(bar, document.body)}
+        <View style={styles.webSlotPlaceholder} pointerEvents="none" />
+      </>
+    );
   }
 
   return bar;
 }
 
 const styles = StyleSheet.create({
+  webSlotPlaceholder: {
+    height: 0,
+    minHeight: 0,
+    maxHeight: 0,
+    overflow: 'hidden',
+    opacity: 0,
+    backgroundColor: 'transparent',
+  },
   wrapper: {
     backgroundColor: JC.white,
     borderTopWidth: 1,

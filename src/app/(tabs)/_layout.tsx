@@ -2,7 +2,7 @@ import { Tabs, Redirect } from 'expo-router';
 import { Platform, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { CustomTabBar, TAB_BAR_HEIGHT } from '@/components/custom-tab-bar';
+import { CustomTabBar, getTabBarTotalHeight } from '@/components/custom-tab-bar';
 import { MobileShell } from '@/components/mobile-shell';
 import { useAuth } from '@/context/auth-context';
 import { JC } from '@/constants/jc-theme';
@@ -11,8 +11,23 @@ export default function TabsLayout() {
   const { token, loading } = useAuth();
   const insets = useSafeAreaInsets();
   // Tab bar height only — profile logout sits in screen footer above tabs
-  const bottomPad = Math.max(insets.bottom, 12);
-  const contentBottom = TAB_BAR_HEIGHT + bottomPad + (Platform.OS === 'web' ? 8 : 0);
+  const contentBottom = getTabBarTotalHeight(insets.bottom);
+  const webTabBarSlotHidden =
+    Platform.OS === 'web'
+      ? {
+          height: 0,
+          minHeight: 0,
+          paddingTop: 0,
+          paddingBottom: 0,
+          borderTopWidth: 0,
+          backgroundColor: 'transparent',
+          elevation: 0,
+          position: 'absolute' as const,
+          bottom: 0,
+          left: 0,
+          right: 0,
+        }
+      : undefined;
 
   if (!loading && !token) return <Redirect href="/login" />;
 
@@ -24,6 +39,7 @@ export default function TabsLayout() {
           screenOptions={{
             headerShown: false,
             sceneStyle: { backgroundColor: JC.white, paddingBottom: contentBottom },
+            tabBarStyle: webTabBarSlotHidden,
           }}>
           <Tabs.Screen name="index" options={{ title: 'Home' }} />
           <Tabs.Screen name="sell" options={{ title: 'Sell' }} />
