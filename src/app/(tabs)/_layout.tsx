@@ -1,5 +1,5 @@
 import { Tabs, Redirect } from 'expo-router';
-import { StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CustomTabBar, TAB_BAR_HEIGHT } from '@/components/custom-tab-bar';
@@ -11,7 +11,8 @@ export default function TabsLayout() {
   const { token, loading } = useAuth();
   const insets = useSafeAreaInsets();
   // Tab bar height only — profile logout sits in screen footer above tabs
-  const contentBottom = TAB_BAR_HEIGHT + Math.max(insets.bottom, 10);
+  const bottomPad = Math.max(insets.bottom, 12);
+  const contentBottom = TAB_BAR_HEIGHT + bottomPad + (Platform.OS === 'web' ? 8 : 0);
 
   if (!loading && !token) return <Redirect href="/login" />;
 

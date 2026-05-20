@@ -1,5 +1,6 @@
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import type { ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -29,13 +30,11 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
   const bottomInset = Math.max(insets.bottom, 10);
   const barHeight = TAB_BAR_HEIGHT + bottomInset;
 
-  return (
+  const bar = (
     <View
-      style={[
-        styles.wrapper,
-        styles.wrapperWeb,
-        { height: barHeight, paddingBottom: bottomInset },
-      ]}>
+      // Pinned via global.css on mobile web (portal avoids parent transform breaking fixed)
+      nativeID="jc-tab-bar"
+      style={[styles.wrapper, { height: barHeight, paddingBottom: bottomInset }]}>
       <View style={styles.bar}>
         {state.routes.map((route, index) => {
           const focused = state.index === index;
@@ -75,6 +74,13 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
       </View>
     </View>
   );
+
+  // Live mobile browsers: fixed tab bar inside RN tree often renders off-screen (ancestor transform).
+  if (Platform.OS === 'web' && typeof document !== 'undefined') {
+    return createPortal(bar, document.body);
+  }
+
+  return bar;
 }
 
 const styles = StyleSheet.create({
@@ -93,20 +99,6 @@ const styles = StyleSheet.create({
         }
       : {}),
   },
-  wrapperWeb:
-    Platform.OS === 'web'
-      ? ({
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          zIndex: 10000,
-          maxWidth: JC.maxWidth,
-          marginLeft: 'auto',
-          marginRight: 'auto',
-          boxShadow: '0 -2px 12px rgba(0,0,0,0.08)',
-        } as object)
-      : {},
   bar: {
     flex: 1,
     flexDirection: 'row',

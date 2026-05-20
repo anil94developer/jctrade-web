@@ -11,9 +11,24 @@
 body {
   margin: 0;
   overflow-x: hidden;
+  min-height: 100dvh;
 }
 
-/* Mobile web: keep fixed tab bar above page content */
 #root {
-  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Bottom tab bar — portaled to body on web; must use real CSS for mobile Safari/Chrome */
+#jc-tab-bar {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 100% !important;
+  max-width: 430px !important;
+  z-index: 2147483646 !important;
+  box-sizing: border-box !important;
+  -webkit-transform: translateX(-50%) !important;
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.08) !important;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
