@@ -8,8 +8,12 @@
   --font-serif: Georgia, 'Times New Roman', serif;
 }
 
-/* Keep bottom tab bar inside centered mobile column on web */
 body {
   margin: 0;
   overflow-x: hidden;
+}
+
+/* Mobile web: keep fixed tab bar above page content */
+#root {
+  min-height: 100vh;
 }

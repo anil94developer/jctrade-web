@@ -16,7 +16,7 @@ export default function TabsLayout() {
   if (!loading && !token) return <Redirect href="/login" />;
 
   return (
-    <MobileShell style={styles.shell}>
+    <MobileShell>
       <View style={styles.root}>
         <Tabs
           tabBar={(props) => <CustomTabBar {...props} />}
@@ -36,9 +36,6 @@ export default function TabsLayout() {
 }
 
 const styles = StyleSheet.create({
-  shell: {
-    overflow: 'hidden',
-  },
   root: {
     flex: 1,
     width: '100%',

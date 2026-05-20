@@ -1,6 +1,6 @@
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
@@ -30,7 +30,12 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
   const barHeight = TAB_BAR_HEIGHT + bottomInset;
 
   return (
-    <View style={[styles.wrapper, { height: barHeight, paddingBottom: bottomInset }]}>
+    <View
+      style={[
+        styles.wrapper,
+        styles.wrapperWeb,
+        { height: barHeight, paddingBottom: bottomInset },
+      ]}>
       <View style={styles.bar}>
         {state.routes.map((route, index) => {
           const focused = state.index === index;
@@ -78,7 +83,30 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: JC.grayBorder,
     width: '100%',
+    ...(Platform.OS !== 'web'
+      ? {
+          elevation: 12,
+          shadowColor: JC.black,
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.08,
+          shadowRadius: 8,
+        }
+      : {}),
   },
+  wrapperWeb:
+    Platform.OS === 'web'
+      ? ({
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 10000,
+          maxWidth: JC.maxWidth,
+          marginLeft: 'auto',
+          marginRight: 'auto',
+          boxShadow: '0 -2px 12px rgba(0,0,0,0.08)',
+        } as object)
+      : {},
   bar: {
     flex: 1,
     flexDirection: 'row',
