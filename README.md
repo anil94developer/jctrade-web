@@ -28,12 +28,24 @@ Copy `.env.example` to `.env`:
 2. **Build command:** `npm install && npm run build`
 3. **Publish directory:** `dist`
 4. **Node version:** `20` (Dashboard → Environment → `NODE_VERSION=20`)
-5. **Environment variables** (set before deploy; baked in at build time):
-   - `EXPO_PUBLIC_API_URL` — e.g. `https://your-api.onrender.com/api`
+5. **Environment variables** (set **before** each build — they are compiled into JS):
+   - `EXPO_PUBLIC_API_URL` — e.g. `https://jctrade-server.onrender.com/api`
    - `EXPO_PUBLIC_GOOGLE_CLIENT_ID` — same Web client ID as local
-6. In **Google Cloud Console**, add your Render URL to **Authorized JavaScript origins**, e.g. `https://jctrade-web.onrender.com`
+6. **HTTP headers (Google popup):** For path `/*`, set `Cross-Origin-Opener-Policy: same-origin-allow-popups` and `Cross-Origin-Embedder-Policy: unsafe-none`. Repo `render.yaml` includes these for Blueprint deployments; otherwise add them under Static Site → **Headers** in the Render dashboard.
 
-Or use the included `render.yaml` blueprint when creating the service.
+7. In **Google Cloud Console**, under your Web OAuth client → **Authorized JavaScript origins**, add your live URL, e.g. `https://jctrade-web.onrender.com`.
+
+**Blueprint:** sync the repo and use included `render.yaml` so headers and routing stay in sync.
+
+## Troubleshooting
+
+| Issue | Cause |
+|--------|--------|
+| **React hydration #418** on login | GSI iframe vs static HTML mismatch — fixed by mounting `GoogleLogin` only after mount (included in codebase). Redeploy. |
+| **COOP / postMessage** warnings | Hosted HTML must send `Cross-Origin-Opener-Policy: same-origin-allow-popups` (see headers above). `metro.config.js` only applies to `expo start`, not production `dist/`. |
+| **`localhost:4000` ERR_CONNECTION_REFUSED** on deployed site | Build omitted `EXPO_PUBLIC_API_URL`. Set it to `https://jctrade-server.onrender.com/api` and **rebuild** the static site. |
+| **GSI initialize multiple times** | Harmless in React Strict Mode (dev). Production should log once. |
+
 
 ## Build output
 

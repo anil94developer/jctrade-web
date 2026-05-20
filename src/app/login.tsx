@@ -83,11 +83,16 @@ function WebLogin() {
   const { loading, handleGoogleToken } = useGoogleSignIn();
   const handledRef = useRef(false);
   const origins = getWebOrigins();
+  /** GSI injects DOM that never matches SSR — mount only after hydration. */
+  const [googleReady, setGoogleReady] = useState(false);
+  useEffect(() => {
+    setGoogleReady(true);
+  }, []);
 
   return (
     <LoginLayout>
       <View style={styles.googleWrap}>
-        {loading ? (
+        {loading || !googleReady ? (
           <ActivityIndicator color={JC.black} size="large" />
         ) : (
           <GoogleLogin
@@ -102,7 +107,7 @@ function WebLogin() {
             }}
             onError={() => {
               alert(
-                `Google blocked this site.\n\nAdd ALL of these under OAuth → Web client → Authorized JavaScript origins:\n\n${origins.join('\n')}\n\nThen open ONLY: http://localhost:8081`
+                `Google blocked this site.\n\nAdd ALL of these under OAuth → Web client → Authorized JavaScript origins:\n\n${origins.join('\n')}\n\nFor local dev use http://localhost:8081. For production add your live site URL.`
               );
             }}
             useOneTap={false}

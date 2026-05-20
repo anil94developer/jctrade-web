@@ -13,6 +13,14 @@ services:
         sync: false
       - key: EXPO_PUBLIC_GOOGLE_CLIENT_ID
         sync: false
+    # Google Sign-In popup uses postMessage; default COOP breaks it without this.
+    headers:
+      - path: /*
+        name: Cross-Origin-Opener-Policy
+        value: same-origin-allow-popups
+      - path: /*
+        name: Cross-Origin-Embedder-Policy
+        value: unsafe-none
     routes:
       - type: rewrite
         source: /*

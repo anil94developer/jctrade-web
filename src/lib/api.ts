@@ -4,6 +4,16 @@ import { Platform } from 'react-native';
 // Web on same machine uses localhost; physical device needs your PC IP in .env
 const API = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:4000/api';
 
+function reachabilityHint(): string {
+  if (Platform.OS !== 'web' || typeof window === 'undefined') return '';
+  const host = window.location.hostname;
+  const usingLocalApi = API.includes('localhost') || API.includes('127.0.0.1');
+  if (usingLocalApi && host !== 'localhost' && host !== '127.0.0.1') {
+    return ` Rebuild the app with EXPO_PUBLIC_API_URL=https://your-api.onrender.com/api (current: ${API}).`;
+  }
+  return '';
+}
+
 async function getToken() {
   return AsyncStorage.getItem('userToken');
 }
@@ -22,7 +32,7 @@ export async function api<T = unknown>(path: string, options: RequestInit = {}):
   } catch {
     throw new Error(
       Platform.OS === 'web'
-        ? `Cannot reach API at ${API}. Start server: cd server && npm start`
+        ? `Cannot reach API at ${API}. Start server: cd server && npm start.${reachabilityHint()}`
         : `Cannot reach API. Set EXPO_PUBLIC_API_URL in .env to your computer IP`
     );
   }
@@ -77,7 +87,7 @@ export async function getPublicSettings(): Promise<PublicSettings> {
   } catch {
     throw new Error(
       Platform.OS === 'web'
-        ? `Cannot reach API at ${API}. Run: cd server && npm start`
+        ? `Cannot reach API at ${API}. Run: cd server && npm start.${reachabilityHint()}`
         : `Cannot reach API. Set EXPO_PUBLIC_API_URL in jctrade/.env`
     );
   }
