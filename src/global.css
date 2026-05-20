@@ -18,7 +18,7 @@ body {
   min-height: 100dvh;
 }
 
-/* Portaled tab bar — no transform (Android breaks fixed + translate); center with margin */
+/* Bottom nav — fixed to viewport bottom on mobile web */
 #jc-tab-bar {
   position: fixed !important;
   bottom: 0 !important;
@@ -28,12 +28,6 @@ body {
   max-width: 430px !important;
   margin-left: auto !important;
   margin-right: auto !important;
-  z-index: 2147483646 !important;
+  z-index: 99999 !important;
   box-sizing: border-box !important;
-  transform: none !important;
-  -webkit-transform: none !important;
-  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.08) !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  pointer-events: auto !important;
 }

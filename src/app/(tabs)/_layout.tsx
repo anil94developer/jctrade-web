@@ -2,7 +2,8 @@ import { Tabs, Redirect } from 'expo-router';
 import { Platform, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { CustomTabBar, getTabBarTotalHeight } from '@/components/custom-tab-bar';
+import { BottomTabDock } from '@/components/bottom-tab-dock';
+import { getTabBarTotalHeight } from '@/components/custom-tab-bar';
 import { MobileShell } from '@/components/mobile-shell';
 import { useAuth } from '@/context/auth-context';
 import { JC } from '@/constants/jc-theme';
@@ -10,36 +11,40 @@ import { JC } from '@/constants/jc-theme';
 export default function TabsLayout() {
   const { token, loading } = useAuth();
   const insets = useSafeAreaInsets();
-  // Tab bar height only — profile logout sits in screen footer above tabs
-  const contentBottom = getTabBarTotalHeight(insets.bottom);
-  const webTabBarSlotHidden =
-    Platform.OS === 'web'
-      ? {
-          height: 0,
-          minHeight: 0,
-          paddingTop: 0,
-          paddingBottom: 0,
-          borderTopWidth: 0,
-          backgroundColor: 'transparent',
-          elevation: 0,
-          position: 'absolute' as const,
-          bottom: 0,
-          left: 0,
-          right: 0,
-        }
-      : undefined;
+  const tabBarHeight = getTabBarTotalHeight(insets.bottom);
 
   if (!loading && !token) return <Redirect href="/login" />;
 
   return (
     <MobileShell>
-      <View style={styles.root}>
+      <View style={styles.page}>
         <Tabs
-          tabBar={(props) => <CustomTabBar {...props} />}
+          tabBar={(props) => <BottomTabDock {...props} />}
           screenOptions={{
             headerShown: false,
-            sceneStyle: { backgroundColor: JC.white, paddingBottom: contentBottom },
-            tabBarStyle: webTabBarSlotHidden,
+            tabBarPosition: 'bottom',
+            sceneStyle: {
+              backgroundColor: JC.white,
+              paddingBottom: tabBarHeight,
+            },
+            tabBarStyle: {
+              position: Platform.OS === 'web' ? 'fixed' : 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: tabBarHeight,
+              width: '100%',
+              maxWidth: JC.maxWidth,
+              alignSelf: 'center',
+              marginLeft: 'auto',
+              marginRight: 'auto',
+              paddingTop: 0,
+              paddingBottom: 0,
+              borderTopWidth: 0,
+              backgroundColor: 'transparent',
+              elevation: 0,
+              zIndex: 99999,
+            },
           }}>
           <Tabs.Screen name="index" options={{ title: 'Home' }} />
           <Tabs.Screen name="sell" options={{ title: 'Sell' }} />
@@ -53,9 +58,12 @@ export default function TabsLayout() {
 }
 
 const styles = StyleSheet.create({
-  root: {
+  page: {
     flex: 1,
     width: '100%',
+    maxWidth: JC.maxWidth,
+    alignSelf: 'center',
     backgroundColor: JC.white,
+    position: 'relative',
   },
 });

@@ -1,6 +1,5 @@
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import type { ReactNode } from 'react';
-import { createPortal } from 'react-dom';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -25,7 +24,7 @@ const TAB_CONFIG: Record<string, { label: string; Icon: IconRender }> = {
 
 export const TAB_BAR_HEIGHT = 62;
 
-/** Total bottom chrome height (bar + safe area) for screen padding. */
+/** Bar + safe area — use for tabBarStyle height and screen paddingBottom. */
 export function getTabBarTotalHeight(insetsBottom = 0) {
   return TAB_BAR_HEIGHT + Math.max(insetsBottom, 8);
 }
@@ -33,12 +32,9 @@ export function getTabBarTotalHeight(insetsBottom = 0) {
 export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const safeBottom = Math.max(insets.bottom, 8);
-  const barHeight = getTabBarTotalHeight(insets.bottom);
 
-  const bar = (
-    <View
-      nativeID="jc-tab-bar"
-      style={[styles.wrapper, { height: barHeight, paddingBottom: safeBottom }]}>
+  return (
+    <View style={[styles.wrapper, { paddingBottom: safeBottom }]}>
       <View style={styles.bar}>
         {state.routes.map((route, index) => {
           const focused = state.index === index;
@@ -78,49 +74,33 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
       </View>
     </View>
   );
-
-  // Web: render bar on document.body; collapse in-nav slot so Android doesn't show a blank box.
-  if (Platform.OS === 'web' && typeof document !== 'undefined') {
-    return (
-      <>
-        {createPortal(bar, document.body)}
-        <View style={styles.webSlotPlaceholder} pointerEvents="none" />
-      </>
-    );
-  }
-
-  return bar;
 }
 
 const styles = StyleSheet.create({
-  webSlotPlaceholder: {
-    height: 0,
-    minHeight: 0,
-    maxHeight: 0,
-    overflow: 'hidden',
-    opacity: 0,
-    backgroundColor: 'transparent',
-  },
   wrapper: {
+    flex: 1,
     backgroundColor: JC.white,
     borderTopWidth: 1,
     borderTopColor: JC.grayBorder,
     width: '100%',
-    ...(Platform.OS !== 'web'
+    ...(Platform.OS === 'web'
       ? {
+          boxShadow: '0 -2px 10px rgba(0,0,0,0.08)' as unknown as undefined,
+        }
+      : {
           elevation: 12,
           shadowColor: JC.black,
           shadowOffset: { width: 0, height: -2 },
           shadowOpacity: 0.08,
           shadowRadius: 8,
-        }
-      : {}),
+        }),
   },
   bar: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'flex-start',
     paddingTop: 8,
+    minHeight: TAB_BAR_HEIGHT,
   },
   tab: {
     flex: 1,

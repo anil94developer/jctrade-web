@@ -23,10 +23,12 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: JC.maxWidth,
     backgroundColor: JC.white,
+    position: 'relative',
     ...(Platform.OS === 'web'
       ? {
           boxShadow: '0 0 24px rgba(0,0,0,0.08)' as unknown as undefined,
           minHeight: '100dvh' as unknown as number,
+          overflow: 'visible' as unknown as undefined,
         }
       : {}),
   },
