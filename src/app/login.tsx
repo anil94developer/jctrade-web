@@ -115,7 +115,7 @@ function WebLogin() {
           />
         )}
       </View>
-      <Text style={styles.warn}>
+      {/* <Text style={styles.warn}>
         Open app at http://localhost:8081 (not IP address)
       </Text>
       <Text style={styles.hint}>
@@ -126,7 +126,7 @@ function WebLogin() {
             {'\n'}
           </Text>
         ))}
-      </Text>
+      </Text> */}
     </LoginLayout>
   );
 }
