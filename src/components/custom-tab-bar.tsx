@@ -1,19 +1,25 @@
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import {
+  TabIconHome,
+  TabIconProfile,
+  TabIconSell,
+  TabIconSupport,
+  TabIconUpi,
+} from '@/components/tab-bar-icons';
 import { JC } from '@/constants/jc-theme';
 
-/**
- * Tab glyphs use emoji + normal Text (system font). Ionicons needs Ionicons.ttf;
- * on some static hosts / CDNs that font can 404 or load after paint, so icons vanish.
- */
-const TAB_CONFIG: Record<string, { label: string; glyph: string }> = {
-  index: { label: 'Home', glyph: '🏠' },
-  sell: { label: 'Sell', glyph: '💱' },
-  wallet: { label: 'UPI', glyph: '💳' },
-  support: { label: 'Support', glyph: '🎧' },
-  profile: { label: 'My', glyph: '👤' },
+type IconRender = (p: { color: string }) => ReactNode;
+
+const TAB_CONFIG: Record<string, { label: string; Icon: IconRender }> = {
+  index: { label: 'Home', Icon: ({ color }) => <TabIconHome color={color} /> },
+  sell: { label: 'Sell', Icon: ({ color }) => <TabIconSell color={color} /> },
+  wallet: { label: 'UPI', Icon: ({ color }) => <TabIconUpi color={color} /> },
+  support: { label: 'Support', Icon: ({ color }) => <TabIconSupport color={color} /> },
+  profile: { label: 'My', Icon: ({ color }) => <TabIconProfile color={color} /> },
 };
 
 export const TAB_BAR_HEIGHT = 62;
@@ -26,12 +32,14 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
   return (
     <View style={[styles.wrapper, { height: barHeight, paddingBottom: bottomInset }]}>
       <View style={styles.bar}>
-        {state.routes.map((route, index) => {
+        {state.routes.map((route) => {
           const focused = state.index === index;
-          const config = TAB_CONFIG[route.name] ?? {
-            label: route.name,
-            glyph: '•',
-          };
+          const config =
+            TAB_CONFIG[route.name] ?? ({
+              label: route.name,
+              Icon: ({ color }: { color: string }) => <TabIconProfile color={color} />,
+            } satisfies { label: string; Icon: IconRender });
+          const color = focused ? JC.black : JC.gray;
 
           const onPress = () => {
             const event = navigation.emit({
@@ -52,14 +60,7 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
               accessibilityRole="button"
               accessibilityState={focused ? { selected: true } : {}}
               accessibilityLabel={config.label}>
-              <View style={[styles.iconWrap, focused && styles.iconWrapActive]}>
-                <Text
-                  style={[styles.tabGlyph, { opacity: focused ? 1 : 0.55 }]}
-                  accessibilityElementsHidden
-                  importantForAccessibility="no">
-                  {config.glyph}
-                </Text>
-              </View>
+              <View style={[styles.iconWrap, focused && styles.iconWrapActive]}>{config.Icon({ color })}</View>
               <Text style={[styles.label, focused && styles.labelActive]} numberOfLines={1}>
                 {config.label}
               </Text>
@@ -100,11 +101,6 @@ const styles = StyleSheet.create({
   },
   iconWrapActive: {
     backgroundColor: JC.yellow,
-  },
-  tabGlyph: {
-    fontSize: 22,
-    lineHeight: 26,
-    textAlign: 'center',
   },
   label: {
     fontSize: 11,
