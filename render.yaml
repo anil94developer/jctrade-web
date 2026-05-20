@@ -1,0 +1,19 @@
+# Render Static Site — https://dashboard.render.com
+# Connect repo: https://github.com/anil94developer/jctrade-web
+services:
+  - type: web
+    name: jctrade-web
+    runtime: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: EXPO_PUBLIC_API_URL
+        sync: false
+      - key: EXPO_PUBLIC_GOOGLE_CLIENT_ID
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
