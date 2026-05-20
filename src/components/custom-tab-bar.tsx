@@ -32,7 +32,7 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
   return (
     <View style={[styles.wrapper, { height: barHeight, paddingBottom: bottomInset }]}>
       <View style={styles.bar}>
-        {state.routes.map((route) => {
+        {state.routes.map((route, index) => {
           const focused = state.index === index;
           const config =
             TAB_CONFIG[route.name] ?? ({
