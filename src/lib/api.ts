@@ -89,6 +89,26 @@ export type UserStats = {
   success: number;
 };
 
+export type HomeBanner = {
+  _id: string;
+  title?: string;
+  subtitle?: string;
+  image?: string;
+  link?: string;
+  bgColor?: string;
+  sortOrder?: number;
+};
+
+export type UserEarnings = {
+  binancePrice: number;
+  platformPrice: number;
+  spreadPerUsdt: number;
+  todayUsdtSold: number;
+  todayEarning: number;
+  totalUsdtSold: number;
+  totalEarning: number;
+};
+
 export type ReferralMe = {
   referralCode: string;
   referralLink: string;
@@ -125,6 +145,20 @@ export async function getPublicSettings(): Promise<PublicSettings> {
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error((data as { message?: string }).message || 'Failed to load settings');
   return data as PublicSettings;
+}
+
+export async function getHomeBanners(): Promise<HomeBanner[]> {
+  try {
+    const res = await fetch(`${API}/banners/public`, {
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (res.status === 404) return [];
+    const data = await res.json().catch(() => []);
+    if (!res.ok) return [];
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
 }
 
 export async function getPaymentQr(): Promise<{ image: string | null }> {

@@ -4,14 +4,17 @@ import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'r
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
+import { HomeBannerCarousel } from '@/components/home-banner-carousel';
 import { MaintenanceBanner } from '@/components/maintenance-banner';
 import { useAuth } from '@/context/auth-context';
-import { api, getPublicSettings, type PublicSettings, type UserStats } from '@/lib/api';
+import { api, getHomeBanners, getPublicSettings, type HomeBanner, type PublicSettings, type UserStats } from '@/lib/api';
 import { JC } from '@/constants/jc-theme';
 
 export default function HomeScreen() {
   const { user, refreshUser } = useAuth();
   const [settings, setSettings] = useState<PublicSettings | null>(null);
+  const [banners, setBanners] = useState<HomeBanner[]>([]);
+  const [bannersLoading, setBannersLoading] = useState(true);
   const [stats, setStats] = useState<UserStats>({ inTransaction: 0, success: 0 });
   const [refreshing, setRefreshing] = useState(false);
 
@@ -27,6 +30,15 @@ export default function HomeScreen() {
       setStats(s);
     } catch {
       setStats({ inTransaction: 0, success: 0 });
+    }
+    setBannersLoading(true);
+    try {
+      const b = await getHomeBanners();
+      setBanners(b);
+    } catch {
+      setBanners([]);
+    } finally {
+      setBannersLoading(false);
     }
     await refreshUser();
   }, [refreshUser]);
@@ -58,12 +70,16 @@ export default function HomeScreen() {
           <Text style={styles.logo}>JCTrade</Text>
         </View>
 
-        <View style={styles.banner}>
-          <Text style={styles.bannerText}>We have some gift for you!</Text>
-          {settings && settings.referralReward > 0 && (
-            <Text style={styles.referralText}>Invite friends — earn ₹{settings.referralReward} each</Text>
-          )}
-        </View>
+        <HomeBannerCarousel
+          banners={banners}
+          loading={bannersLoading}
+          fallbackTitle="We have some gift for you!"
+          fallbackSubtitle={
+            settings && settings.referralReward > 0
+              ? `Invite friends — earn ₹${settings.referralReward} each`
+              : undefined
+          }
+        />
 
         {settings?.maintenanceMode && <MaintenanceBanner />}
 
@@ -150,16 +166,6 @@ const styles = StyleSheet.create({
   scroll: { padding: 16, paddingBottom: 16 },
   header: { marginBottom: 12 },
   logo: { fontSize: 26, fontWeight: '800', fontStyle: 'italic', color: JC.green },
-  banner: {
-    backgroundColor: '#FF6B35',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
-    minHeight: 80,
-    justifyContent: 'center',
-  },
-  bannerText: { color: JC.white, fontSize: 18, fontWeight: '700' },
-  referralText: { color: JC.white, fontSize: 13, marginTop: 8, opacity: 0.95 },
   actionRow: { flexDirection: 'row', gap: 12, marginBottom: 16 },
   actionBtn: {
     flex: 1,

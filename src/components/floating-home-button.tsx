@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { Platform, Pressable, StyleSheet, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { TabIconHome } from '@/components/tab-bar-icons';
@@ -15,10 +15,11 @@ export function FloatingHomeButton() {
     <View pointerEvents="box-none" style={[styles.wrap, { bottom }]}>
       <Pressable
         style={styles.btn}
-        onPress={() => router.push('/(tabs)')}
+        onPress={() => router.push('/support')}
         accessibilityRole="button"
         accessibilityLabel="Go to Home">
-        <TabIconHome size={26} color={JC.white} />
+        {/* <HelpCircleIcon size={26} color={JC.white} /> */}
+        <Text style={{ color: JC.white }}>Help</Text>
       </Pressable>
     </View>
   );

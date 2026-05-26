@@ -27,7 +27,7 @@ export default function SellScreen() {
   const [settingsLoading, setSettingsLoading] = useState(true);
   const [transactionHash, setTransactionHash] = useState('');
   const [name, setName] = useState('');
-  const [value, setValue] = useState('');
+  const [usdtAmount, setUsdtAmount] = useState('');
   const [upiId, setUpiId] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -72,15 +72,17 @@ export default function SellScreen() {
       toast.showError('System is under maintenance. Try again later.');
       return;
     }
-    if (!transactionHash.trim() || !name.trim() || !value.trim() || !upiId.trim()) {
-      toast.showError('Fill all fields: transaction hash, name, value, UPI ID');
+    if (!transactionHash.trim() || !name.trim() || !usdtAmount.trim() || !upiId.trim()) {
+      toast.showError('Fill all fields: hash, name, USDT amount, UPI ID');
       return;
     }
-    const amount = Number(value);
-    if (!Number.isFinite(amount) || amount <= 0) {
-      toast.showError('Enter a valid amount in ₹');
+    const usdt = Number(usdtAmount);
+    if (!Number.isFinite(usdt) || usdt <= 0) {
+      toast.showError('Enter a valid USDT amount');
       return;
     }
+    const platformRate = settings?.usdtPrice ?? 0;
+    const inrValue = usdt * platformRate;
     setLoading(true);
     try {
       await api('/transactions', {
@@ -88,14 +90,15 @@ export default function SellScreen() {
         body: JSON.stringify({
           transactionHash: transactionHash.trim(),
           name: name.trim(),
-          value: amount,
+          usdtAmount: usdt,
+          value: inrValue,
           upiId: upiId.trim(),
         }),
       });
       toast.showSuccess('Sell request submitted successfully');
       setTransactionHash('');
       setName('');
-      setValue('');
+      setUsdtAmount('');
       setUpiId('');
     } catch (err) {
       toast.showError(err instanceof Error ? err.message : 'Failed to submit request');
@@ -104,7 +107,12 @@ export default function SellScreen() {
     }
   }
 
-  const price = settings?.usdtPrice ?? 0;
+  const platformPrice = settings?.usdtPrice ?? 0;
+  const binancePrice = settings?.binancePrice || platformPrice;
+  const spread = Math.max(0, platformPrice - binancePrice);
+  const usdtNum = Number(usdtAmount) || 0;
+  const estimatedInr = usdtNum * platformPrice;
+  const estimatedEarn = usdtNum * spread;
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -118,7 +126,10 @@ export default function SellScreen() {
 
           <View style={styles.priceBanner}>
             <Text style={styles.priceLabel}>Current rate</Text>
-            <Text style={styles.price}>₹ {price.toFixed(2)} / USDT</Text>
+            <Text style={styles.price}>₹ {platformPrice.toFixed(2)} / USDT</Text>
+            <Text style={styles.spreadNote}>
+              Binance ₹{binancePrice.toFixed(2)} · Spread ₹{spread.toFixed(2)}/USDT
+            </Text>
           </View>
 
           <PaymentQrBlock
@@ -168,12 +179,22 @@ export default function SellScreen() {
           <Field label="Transaction Hash" value={transactionHash} onChangeText={setTransactionHash} placeholder="0x..." />
           <Field label="Name" value={name} onChangeText={setName} placeholder="Your name" />
           <Field
-            label="Value (₹)"
-            value={value}
-            onChangeText={setValue}
-            placeholder="Amount in INR"
+            label="Sell USDT amount"
+            value={usdtAmount}
+            onChangeText={setUsdtAmount}
+            placeholder="e.g. 100"
             keyboardType="decimal-pad"
           />
+          {usdtNum > 0 && platformPrice > 0 ? (
+            <View style={styles.estimateBox}>
+              <Text style={styles.estimateLine}>
+                Receive (platform): ₹ {estimatedInr.toFixed(2)} ({usdtNum} × {platformPrice.toFixed(2)})
+              </Text>
+              <Text style={styles.estimateEarn}>
+                Est. earning when approved: ₹ {estimatedEarn.toFixed(2)} ({usdtNum} × {spread.toFixed(2)})
+              </Text>
+            </View>
+          ) : null}
           <Field label="UPI ID on Receive" value={upiId} onChangeText={setUpiId} placeholder="name@upi" />
 
           <Pressable
@@ -254,6 +275,17 @@ const styles = StyleSheet.create({
   },
   priceLabel: { fontSize: 13, color: JC.gray },
   price: { fontSize: 24, fontWeight: '800', marginTop: 4 },
+  spreadNote: { fontSize: 12, color: JC.gray, marginTop: 6 },
+  estimateBox: {
+    backgroundColor: JC.greenLight,
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: JC.greenMuted,
+  },
+  estimateLine: { fontSize: 13, color: '#333' },
+  estimateEarn: { fontSize: 13, fontWeight: '700', color: JC.greenDark, marginTop: 6 },
   stepBox: {
     borderWidth: 1,
     borderColor: JC.yellow,

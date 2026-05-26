@@ -30,39 +30,41 @@ export default function SupportScreen() {
     }, [load])
   );
 
+  /** Show when admin entered a value (visibility off only if value is empty). */
+  const showPhone = Boolean(settings?.supportPhone?.trim());
+  const showTelegram = Boolean(settings?.supportTelegram?.trim());
+  const showWhatsapp = Boolean(settings?.supportWhatsapp?.trim());
+
   const items = settings
     ? [
-        settings.supportPhoneVisible &&
-          settings.supportPhone && {
-            key: 'phone',
-            icon: 'call-outline' as const,
-            label: 'Phone',
-            value: settings.supportPhone,
-            action: () => Linking.openURL(`tel:${settings.supportPhone.replace(/\s/g, '')}`),
+        showPhone && {
+          key: 'phone',
+          icon: 'call-outline' as const,
+          label: 'Phone',
+          value: settings.supportPhone,
+          action: () => Linking.openURL(`tel:${settings.supportPhone.replace(/\s/g, '')}`),
+        },
+        showTelegram && {
+          key: 'telegram',
+          icon: 'paper-plane-outline' as const,
+          label: 'Telegram',
+          value: settings.supportTelegram,
+          action: () => {
+            const t = settings.supportTelegram;
+            const url = t.startsWith('http') ? t : `https://t.me/${t.replace('@', '')}`;
+            Linking.openURL(url);
           },
-        settings.supportTelegramVisible &&
-          settings.supportTelegram && {
-            key: 'telegram',
-            icon: 'paper-plane-outline' as const,
-            label: 'Telegram',
-            value: settings.supportTelegram,
-            action: () => {
-              const t = settings.supportTelegram;
-              const url = t.startsWith('http') ? t : `https://t.me/${t.replace('@', '')}`;
-              Linking.openURL(url);
-            },
+        },
+        showWhatsapp && {
+          key: 'whatsapp',
+          icon: 'logo-whatsapp' as const,
+          label: 'WhatsApp',
+          value: settings.supportWhatsapp,
+          action: () => {
+            const num = settings.supportWhatsapp.replace(/\D/g, '');
+            Linking.openURL(`https://wa.me/${num}`);
           },
-        settings.supportWhatsappVisible &&
-          settings.supportWhatsapp && {
-            key: 'whatsapp',
-            icon: 'logo-whatsapp' as const,
-            label: 'WhatsApp',
-            value: settings.supportWhatsapp,
-            action: () => {
-              const num = settings.supportWhatsapp.replace(/\D/g, '');
-              Linking.openURL(`https://wa.me/${num}`);
-            },
-          },
+        },
       ].filter(Boolean)
     : [];
 
@@ -87,7 +89,9 @@ export default function SupportScreen() {
           <View style={styles.empty}>
             <Text style={styles.emptyIcon}>🎧</Text>
             <Text style={styles.emptyTitle}>Service</Text>
-            <Text style={styles.muted}>Support contacts are not available yet. Please check back later.</Text>
+            <Text style={styles.muted}>
+              No support contacts configured. Admin: Settings → add Phone, Telegram, or WhatsApp and save.
+            </Text>
           </View>
         )}
 

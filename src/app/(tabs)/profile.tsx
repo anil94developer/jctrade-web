@@ -1,17 +1,28 @@
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 
 import { useAuth } from '@/context/auth-context';
 import { useToast } from '@/context/toast-context';
+import { api, type UserEarnings } from '@/lib/api';
 import { JC } from '@/constants/jc-theme';
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
   const toast = useToast();
   const [loggingOut, setLoggingOut] = useState(false);
+  const [earnings, setEarnings] = useState<UserEarnings | null>(null);
   const initial = (user?.name || user?.email || 'U').charAt(0).toUpperCase();
+
+  useFocusEffect(
+    useCallback(() => {
+      api<UserEarnings>('/users/me/earnings')
+        .then(setEarnings)
+        .catch(() => setEarnings(null));
+    }, [])
+  );
 
   async function handleLogout() {
     if (loggingOut) return;
@@ -50,14 +61,28 @@ export default function ProfileScreen() {
         <View style={styles.earnCard}>
           <View style={styles.earnHalf}>
             <Text style={styles.earnLabel}>Today&apos;s Earn</Text>
-            <Text style={styles.earnValue}>₹ 0</Text>
+            <Text style={styles.earnValue}>₹ {(earnings?.todayEarning ?? 0).toFixed(2)}</Text>
           </View>
           <View style={styles.divider} />
           <View style={styles.earnHalf}>
-            <Text style={styles.earnLabel}>Total&apos;s Earn</Text>
-            <Text style={styles.earnValue}>₹ {user?.balance?.toFixed(2) ?? '0.00'}</Text>
+            <Text style={styles.earnLabel}>Total Earn</Text>
+            <Text style={styles.earnValue}>₹ {(earnings?.totalEarning ?? 0).toFixed(2)}</Text>
           </View>
         </View>
+
+        {earnings ? (
+          <View style={styles.rateBox}>
+            <Text style={styles.rateTitle}>Earning formula (approved sells)</Text>
+            <Text style={styles.rateLine}>
+              Binance ₹{earnings.binancePrice.toFixed(2)} · Platform ₹{earnings.platformPrice.toFixed(2)} · Spread ₹
+              {earnings.spreadPerUsdt.toFixed(2)}/USDT
+            </Text>
+            <Text style={styles.rateLine}>
+              Today: {earnings.todayUsdtSold.toFixed(2)} USDT × ₹{earnings.spreadPerUsdt.toFixed(2)} = ₹
+              {earnings.todayEarning.toFixed(2)}
+            </Text>
+          </View>
+        ) : null}
 
         <Text style={styles.section}>My Orders</Text>
         <View style={styles.ordersRow}>
@@ -167,6 +192,16 @@ const styles = StyleSheet.create({
   divider: { width: 1, backgroundColor: 'rgba(0,0,0,0.15)' },
   earnLabel: { fontSize: 13, color: '#333' },
   earnValue: { fontSize: 22, fontWeight: '800', marginTop: 6 },
+  rateBox: {
+    backgroundColor: JC.greenLight,
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: JC.greenMuted,
+  },
+  rateTitle: { fontSize: 13, fontWeight: '700', color: JC.greenDark, marginBottom: 8 },
+  rateLine: { fontSize: 12, color: '#444', lineHeight: 18, marginBottom: 4 },
   section: { fontSize: 17, fontWeight: '700', marginBottom: 14 },
   ordersRow: { flexDirection: 'row', justifyContent: 'space-around', marginBottom: 24 },
   orderItem: { alignItems: 'center', gap: 8 },
