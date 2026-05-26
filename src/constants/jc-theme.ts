@@ -8,8 +8,12 @@ export const JC = {
   grayLight: '#F5F5F5',
   grayBorder: '#E8E8E8',
   orange: '#FF8C00',
-  green: '#2E7D32',
+  green: '#1B8A4A',
+  greenDark: '#157A3F',
+  greenLight: '#E8F5E9',
+  greenMuted: '#A5D6A7',
   red: '#E53935',
   blue: '#1976D2',
+  blueSell: '#1E88E5',
   maxWidth: 430,
 } as const;

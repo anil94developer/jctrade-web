@@ -55,6 +55,30 @@ export function TabIconSupport({ size = 22, color }: IconProps) {
   );
 }
 
+export function TabIconTeam({ size = 22, color }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Circle cx={9} cy={9} r={3} stroke={color} strokeWidth={2} />
+      <Circle cx={17} cy={10} r={2.5} stroke={color} strokeWidth={2} />
+      <Path
+        stroke={color}
+        strokeWidth={2}
+        strokeLinecap="round"
+        d="M3 20v-1a5 5 0 0110 0v1M14 19v-1a4 4 0 013-3.5"
+      />
+    </Svg>
+  );
+}
+
+export function TabIconOrder({ size = 22, color }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Rect x={5} y={4} width={14} height={18} rx={2} stroke={color} strokeWidth={2} />
+      <Path stroke={color} strokeWidth={2} strokeLinecap="round" d="M9 9h6M9 13h6M9 17h4" />
+    </Svg>
+  );
+}
+
 export function TabIconProfile({ size = 22, color }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">

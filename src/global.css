@@ -30,4 +30,6 @@ body {
   margin-right: auto !important;
   z-index: 99999 !important;
   box-sizing: border-box !important;
+  height: auto !important;
+  min-height: 0 !important;
 }

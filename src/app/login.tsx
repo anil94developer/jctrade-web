@@ -37,10 +37,17 @@ export default function LoginScreen() {
   return <NativeLogin />;
 }
 
+function getReferralCodeFromUrl(): string {
+  if (typeof window === 'undefined') return '';
+  const params = new URLSearchParams(window.location.search);
+  return String(params.get('ref') || params.get('referralCode') || '').trim();
+}
+
 function useGoogleSignIn() {
   const { signIn, token } = useAuth();
   const toast = useToast();
   const [loading, setLoading] = useState(false);
+  const referralCode = Platform.OS === 'web' ? getReferralCodeFromUrl() : '';
 
   useEffect(() => {
     if (token) {
@@ -59,7 +66,12 @@ function useGoogleSignIn() {
       try {
         const data = await api<{ token: string; user: User }>('/auth/google', {
           method: 'POST',
-          body: JSON.stringify({ idToken, credential: idToken }),
+          body: JSON.stringify({
+            idToken,
+            credential: idToken,
+            referralCode: referralCode || undefined,
+            ref: referralCode || undefined,
+          }),
         });
         await signIn(data.token, data.user);
         toast.showSuccess('Login successful');
@@ -70,7 +82,7 @@ function useGoogleSignIn() {
         setLoading(false);
       }
     },
-    [signIn, loading, goHome, toast]
+    [signIn, loading, goHome, toast, referralCode]
   );
 
   return { loading, handleGoogleToken };

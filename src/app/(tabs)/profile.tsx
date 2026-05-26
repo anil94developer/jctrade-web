@@ -43,7 +43,7 @@ export default function ProfileScreen() {
           </View>
           <View style={styles.userInfo}>
             <Text style={styles.email}>{user?.email}</Text>
-            <Text style={styles.uid}>UID:{user?.uid}</Text>
+            <Text style={styles.uid}>Referral code: {user?.uid || '—'}</Text>
           </View>
         </View>
 
@@ -85,7 +85,11 @@ export default function ProfileScreen() {
           <Text style={styles.menuText}>Wallet History</Text>
           <Text style={styles.chevron}>›</Text>
         </Pressable>
-
+        <Pressable style={styles.menuItem} onPress={() => router.push('/(tabs)/team' as '/(tabs)/sell')}>
+          <Text style={styles.menuEmoji}>👥</Text>
+          <Text style={styles.menuText}>Team & Referrals</Text>
+          <Text style={styles.chevron}>›</Text>
+        </Pressable>
         <View style={styles.details}>
           <Text style={styles.detailRow}>
             <Text style={styles.detailLabel}>Name: </Text>

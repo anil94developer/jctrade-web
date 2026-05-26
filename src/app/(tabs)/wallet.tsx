@@ -4,6 +4,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
+import { PaymentQrBlock } from '@/components/payment-qr-block';
 import { useAuth } from '@/context/auth-context';
 import { api, type PaginatedResponse, type WalletEntry } from '@/lib/api';
 import { JC } from '@/constants/jc-theme';
@@ -23,9 +24,11 @@ export default function WalletScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.title}>UPI / Wallet</Text>
+        <Text style={styles.title}>UPI Payment</Text>
       </View>
       <ScrollView contentContainerStyle={styles.scroll}>
+        <PaymentQrBlock />
+
         <View style={styles.balanceCard}>
           <Text style={styles.balanceLabel}>Available Balance</Text>
           <Text style={styles.balance}>₹ {user?.balance?.toFixed(2) ?? '0.00'}</Text>
@@ -40,7 +43,6 @@ export default function WalletScreen() {
           <Text style={styles.menuText}>All Transactions</Text>
           <Text style={styles.chevron}>›</Text>
         </Pressable>
-
         <Text style={styles.recentTitle}>Recent</Text>
         {entries.length === 0 ? (
           <Text style={styles.empty}>No wallet entries yet</Text>
@@ -65,17 +67,19 @@ export default function WalletScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: JC.white },
-  header: { backgroundColor: JC.yellow, padding: 16 },
-  title: { fontSize: 18, fontWeight: '800', textAlign: 'center' },
+  header: { backgroundColor: JC.green, padding: 16 },
+  title: { fontSize: 18, fontWeight: '800', textAlign: 'center', color: JC.white },
   scroll: { padding: 16 },
   balanceCard: {
-    backgroundColor: JC.yellow,
+    backgroundColor: JC.greenLight,
     borderRadius: 16,
     padding: 20,
     marginBottom: 20,
+    borderWidth: 1,
+    borderColor: JC.greenMuted,
   },
-  balanceLabel: { fontSize: 14, color: JC.black },
-  balance: { fontSize: 32, fontWeight: '800', marginTop: 4 },
+  balanceLabel: { fontSize: 14, color: JC.greenDark },
+  balance: { fontSize: 32, fontWeight: '800', marginTop: 4, color: JC.greenDark },
   upi: { fontSize: 13, marginTop: 8, color: '#333' },
   menuItem: {
     flexDirection: 'row',
@@ -87,7 +91,7 @@ const styles = StyleSheet.create({
   },
   menuText: { fontSize: 16, fontWeight: '600' },
   chevron: { fontSize: 22, color: JC.gray },
-  recentTitle: { fontSize: 16, fontWeight: '700', marginTop: 20, marginBottom: 12 },
+  recentTitle: { fontSize: 16, fontWeight: '700', marginTop: 20, marginBottom: 12, color: JC.green },
   empty: { color: JC.gray, textAlign: 'center', padding: 24 },
   entry: {
     flexDirection: 'row',

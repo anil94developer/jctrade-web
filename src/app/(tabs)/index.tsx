@@ -1,18 +1,18 @@
 import { router } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
-import { SectionTitle } from '@/components/section-title';
-import { useAuth } from '@/context/auth-context';
 import { MaintenanceBanner } from '@/components/maintenance-banner';
-import { api, getPublicSettings, type PublicSettings } from '@/lib/api';
+import { useAuth } from '@/context/auth-context';
+import { api, getPublicSettings, type PublicSettings, type UserStats } from '@/lib/api';
 import { JC } from '@/constants/jc-theme';
 
 export default function HomeScreen() {
   const { user, refreshUser } = useAuth();
   const [settings, setSettings] = useState<PublicSettings | null>(null);
+  const [stats, setStats] = useState<UserStats>({ inTransaction: 0, success: 0 });
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
@@ -21,6 +21,12 @@ export default function HomeScreen() {
       setSettings(data);
     } catch {
       setSettings(null);
+    }
+    try {
+      const s = await api<UserStats>('/users/me/stats');
+      setStats(s);
+    } catch {
+      setStats({ inTransaction: 0, success: 0 });
     }
     await refreshUser();
   }, [refreshUser]);
@@ -40,68 +46,81 @@ export default function HomeScreen() {
     }
   }
 
+  const platformPrice = settings?.usdtPrice ?? 0;
+  const binancePrice = settings?.binancePrice || platformPrice;
+
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView
         contentContainerStyle={styles.scroll}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={JC.yellow} />}>
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={JC.green} />}>
         <View style={styles.header}>
           <Text style={styles.logo}>JCTrade</Text>
         </View>
 
         <View style={styles.banner}>
-          <Text style={styles.bannerText}>Invite friends to earn money!</Text>
+          <Text style={styles.bannerText}>We have some gift for you!</Text>
           {settings && settings.referralReward > 0 && (
-            <Text style={styles.referralText}>Referral reward: ₹{settings.referralReward} per invite</Text>
+            <Text style={styles.referralText}>Invite friends — earn ₹{settings.referralReward} each</Text>
           )}
         </View>
 
         {settings?.maintenanceMode && <MaintenanceBanner />}
 
-        <View style={styles.priceCard}>
-          <Text style={styles.priceLabel}>Current USDT Price</Text>
-          <View style={styles.priceRow}>
-            <View style={styles.coin}>
-              <Text style={styles.coinText}>₹</Text>
+        <View style={styles.actionRow}>
+          <Pressable style={[styles.actionBtn, styles.buyBtn]} onPress={() => router.push('/(tabs)/sell')}>
+            <Text style={styles.actionIcon}>↓</Text>
+            <Text style={styles.actionLabel}>Buy</Text>
+          </Pressable>
+          <Pressable style={[styles.actionBtn, styles.sellBtn]} onPress={() => router.push('/(tabs)/sell')}>
+            <Text style={styles.actionIcon}>↑</Text>
+            <Text style={styles.actionLabel}>Sell</Text>
+          </Pressable>
+        </View>
+
+        <Pressable style={styles.tradeCard} onPress={() => router.push('/(tabs)/sell')}>
+          <View style={styles.tradeCardHead}>
+            <Text style={styles.tradeTitle}>Sell USDT by INR</Text>
+            <Text style={styles.tradeArrow}>›</Text>
+          </View>
+          <Text style={styles.tradeSub}>Submit hash & UPI — get paid at platform price</Text>
+          <View style={styles.priceCompare}>
+            <View style={styles.priceBox}>
+              <Text style={styles.priceBoxLabel}>Binance Price (₹)</Text>
+              <Text style={styles.priceBoxValue}>{binancePrice.toFixed(2)}</Text>
             </View>
-            <Text style={styles.priceValue}>{(settings?.usdtPrice ?? 0).toFixed(2)}</Text>
-            <View style={styles.flex1} />
-            <Text style={styles.inrNote}>INR per USDT</Text>
+            <View style={styles.priceBox}>
+              <Text style={styles.priceBoxLabel}>Platform Price (₹)</Text>
+              <Text style={[styles.priceBoxValue, styles.platformPrice]}>{platformPrice.toFixed(2)}</Text>
+            </View>
           </View>
-          <Text style={styles.adminNote}>Price set by admin</Text>
-        </View>
+        </Pressable>
 
-        <SectionTitle title="Asset Balance" />
-        <View style={styles.balanceRow}>
-          <View style={styles.coin}>
-            <Text style={styles.coinText}>₹</Text>
+        <Pressable style={styles.tradeCard} onPress={() => router.push('/(tabs)/team' as '/(tabs)/sell')}>
+          <View style={styles.tradeCardHead}>
+            <Text style={styles.tradeTitle}>Join by Rupee / Referral</Text>
+            <Text style={styles.tradeArrow}>›</Text>
           </View>
-          <Text style={styles.balance}>{user?.balance?.toFixed(2) ?? '0.00'}</Text>
-          <View style={styles.flex1} />
-          <Text style={styles.pegged}>1 INRC = 1 INR</Text>
-        </View>
+          <Text style={styles.tradeSub}>
+            Cashback up to {settings?.sellCashbackPercent ?? 0.4}% sell · {settings?.buyCashbackPercent ?? 0.3}% buy
+          </Text>
+        </Pressable>
 
-        <SectionTitle title="Today's Sell" />
+        <Text style={styles.sectionTitle}>Today's Sell</Text>
         <View style={styles.statsRow}>
           <View style={[styles.statCard, styles.statYellow]}>
-            <Text style={styles.statNum}>0</Text>
+            <Text style={styles.statNum}>{stats.inTransaction}</Text>
             <Text style={styles.statLabel}>In Transaction</Text>
           </View>
-          <View style={[styles.statCard, styles.statBlue]}>
-            <Text style={styles.statNum}>0</Text>
+          <View style={[styles.statCard, styles.statGreen]}>
+            <Text style={styles.statNum}>{stats.success}</Text>
             <Text style={styles.statLabel}>Success</Text>
           </View>
         </View>
 
-        <View style={styles.rewardBox}>
-          <Text style={styles.rewardTitle}>Trading Rewards</Text>
-          <Text style={styles.rewardSub}>You will receive profit on each USDT sell transaction</Text>
-          <View style={styles.rewardCard}>
-            <Text style={styles.rewardExample}>
-              Sell USDT at the current admin price. Submit your transaction hash, name, value and UPI ID to receive
-              payment.
-            </Text>
-          </View>
+        <View style={styles.balanceStrip}>
+          <Text style={styles.balanceLabel}>Wallet balance</Text>
+          <Text style={styles.balanceValue}>₹ {user?.balance?.toFixed(2) ?? '0.00'}</Text>
         </View>
 
         {settings?.walletAddress ? (
@@ -114,17 +133,13 @@ export default function HomeScreen() {
         ) : null}
 
         <View style={styles.quickLinks}>
-          <Text style={styles.link} onPress={() => router.push('/(tabs)/sell')}>
-            → Sell USDT
+          <Text style={styles.link} onPress={() => router.push('/(tabs)/wallet')}>
+            → UPI / Payment QR
           </Text>
           <Text style={styles.link} onPress={() => router.push('/transactions')}>
             → Transaction History
           </Text>
-          <Text style={styles.link} onPress={() => router.push('/wallet-history')}>
-            → Wallet History
-          </Text>
         </View>
-
       </ScrollView>
     </SafeAreaView>
   );
@@ -132,72 +147,79 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: JC.white },
-  scroll: { padding: 16, paddingBottom: 100 },
-  header: { marginBottom: 16 },
-  logo: { fontSize: 26, fontWeight: '800', fontStyle: 'italic', color: JC.black },
+  scroll: { padding: 16, paddingBottom: 16 },
+  header: { marginBottom: 12 },
+  logo: { fontSize: 26, fontWeight: '800', fontStyle: 'italic', color: JC.green },
   banner: {
     backgroundColor: '#FF6B35',
     borderRadius: 16,
     padding: 20,
-    marginBottom: 20,
-    minHeight: 90,
+    marginBottom: 16,
+    minHeight: 80,
     justifyContent: 'center',
   },
   bannerText: { color: JC.white, fontSize: 18, fontWeight: '700' },
   referralText: { color: JC.white, fontSize: 13, marginTop: 8, opacity: 0.95 },
-  priceCard: {
-    backgroundColor: JC.yellowLight,
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: JC.yellow,
-    marginBottom: 24,
-  },
-  priceLabel: { fontSize: 14, color: JC.gray, marginBottom: 8 },
-  priceRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  flex1: { flex: 1 },
-  coin: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: JC.yellow,
+  actionRow: { flexDirection: 'row', gap: 12, marginBottom: 16 },
+  actionBtn: {
+    flex: 1,
+    borderRadius: 14,
+    paddingVertical: 18,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  coinText: { fontWeight: '800', fontSize: 16 },
-  priceValue: { fontSize: 36, fontWeight: '800', color: JC.black },
-  inrNote: { fontSize: 12, color: JC.gray },
-  adminNote: { fontSize: 12, color: JC.gray, marginTop: 8 },
-  balanceRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 24 },
-  balance: { fontSize: 32, fontWeight: '800' },
-  pegged: { fontSize: 12, color: JC.gray },
-  statsRow: { flexDirection: 'row', gap: 12, marginBottom: 24 },
+  buyBtn: { backgroundColor: JC.green },
+  sellBtn: { backgroundColor: JC.blueSell },
+  actionIcon: { fontSize: 22, color: JC.white, fontWeight: '800' },
+  actionLabel: { color: JC.white, fontWeight: '700', fontSize: 16, marginTop: 4 },
+  tradeCard: {
+    backgroundColor: JC.white,
+    borderRadius: 14,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: JC.grayBorder,
+  },
+  tradeCardHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  tradeTitle: { fontSize: 16, fontWeight: '700', color: JC.black },
+  tradeArrow: { fontSize: 22, color: JC.green, fontWeight: '600' },
+  tradeSub: { fontSize: 13, color: JC.gray, marginTop: 6, marginBottom: 12 },
+  priceCompare: { flexDirection: 'row', gap: 10 },
+  priceBox: {
+    flex: 1,
+    backgroundColor: JC.grayLight,
+    borderRadius: 10,
+    padding: 12,
+  },
+  priceBoxLabel: { fontSize: 11, color: JC.gray },
+  priceBoxValue: { fontSize: 20, fontWeight: '800', marginTop: 4 },
+  platformPrice: { color: JC.green },
+  sectionTitle: { fontSize: 16, fontWeight: '700', color: JC.green, marginTop: 8, marginBottom: 10 },
+  statsRow: { flexDirection: 'row', gap: 12, marginBottom: 16 },
   statCard: { flex: 1, borderRadius: 14, padding: 16 },
   statYellow: { backgroundColor: '#FFF3E0' },
-  statBlue: { backgroundColor: '#E3F2FD' },
+  statGreen: { backgroundColor: JC.greenLight },
   statNum: { fontSize: 28, fontWeight: '800' },
   statLabel: { fontSize: 13, color: JC.gray, marginTop: 4 },
-  rewardBox: { marginBottom: 20 },
-  rewardTitle: { textAlign: 'center', fontWeight: '700', fontSize: 16, marginBottom: 6 },
-  rewardSub: { textAlign: 'center', fontSize: 13, color: JC.gray, marginBottom: 12 },
-  rewardCard: {
-    borderWidth: 1,
-    borderColor: JC.yellow,
-    backgroundColor: JC.yellowLight,
+  balanceStrip: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: JC.greenLight,
     borderRadius: 12,
     padding: 14,
+    marginBottom: 16,
   },
-  rewardExample: { fontSize: 13, lineHeight: 20, color: JC.black },
+  balanceLabel: { fontSize: 14, color: JC.greenDark, fontWeight: '600' },
+  balanceValue: { fontSize: 22, fontWeight: '800', color: JC.greenDark },
   walletPreview: {
-    backgroundColor: JC.yellowLight,
-    borderWidth: 1,
-    borderColor: JC.yellow,
+    backgroundColor: JC.grayLight,
     borderRadius: 12,
     padding: 14,
     marginBottom: 16,
   },
   walletLabel: { fontSize: 13, fontWeight: '700', marginBottom: 6 },
   walletAddr: { fontSize: 12, fontFamily: 'monospace', lineHeight: 18 },
-  quickLinks: { gap: 12 },
-  link: { fontSize: 15, fontWeight: '600', color: JC.blue },
+  quickLinks: { gap: 12, marginBottom: 8 },
+  link: { fontSize: 15, fontWeight: '600', color: JC.green },
 });

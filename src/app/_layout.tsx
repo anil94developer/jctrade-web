@@ -11,7 +11,14 @@ import { JC } from '@/constants/jc-theme';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
-const PROTECTED_SEGMENTS = new Set(['(tabs)', 'wallet-history', 'transactions', 'transaction', 'profile-edit']);
+const PROTECTED_SEGMENTS = new Set([
+  '(tabs)',
+  'wallet-history',
+  'transactions',
+  'transaction',
+  'profile-edit',
+  'support',
+]);
 
 function AuthNavigationGuard() {
   const { token, loading } = useAuth();
@@ -56,6 +63,7 @@ export default function RootLayout() {
         <Stack.Screen name="transactions" options={{ presentation: 'card' }} />
         <Stack.Screen name="transaction/[id]" options={{ presentation: 'card' }} />
         <Stack.Screen name="profile-edit" options={{ presentation: 'card' }} />
+        <Stack.Screen name="support" options={{ presentation: 'card' }} />
       </Stack>
           </ToastProvider>
         </AuthProvider>

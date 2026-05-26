@@ -15,6 +15,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import * as Clipboard from 'expo-clipboard';
 
 import { MaintenanceBanner } from '@/components/maintenance-banner';
+import { PaymentQrBlock } from '@/components/payment-qr-block';
 import { useToast } from '@/context/toast-context';
 import { api, getPublicSettings, type PublicSettings } from '@/lib/api';
 import { JC } from '@/constants/jc-theme';
@@ -119,6 +120,11 @@ export default function SellScreen() {
             <Text style={styles.priceLabel}>Current rate</Text>
             <Text style={styles.price}>₹ {price.toFixed(2)} / USDT</Text>
           </View>
+
+          <PaymentQrBlock
+            title="Scan QR to pay (UPI)"
+            hint="After payment, send USDT to the wallet below and fill the form"
+          />
 
           <View style={styles.stepBox}>
             <Text style={styles.stepNum}>STEP 1</Text>

@@ -66,15 +66,46 @@ export type Transaction = {
 
 export type PublicSettings = {
   usdtPrice: number;
+  binancePrice: number;
   walletAddress: string;
   maintenanceMode: boolean;
   referralReward: number;
+  referralBaseUrl: string;
+  sellCashbackPercent: number;
+  buyCashbackPercent: number;
+  paymentQrVisible: boolean;
+  hasPaymentQr: boolean;
+  paymentQrImage?: string | null;
   supportPhone: string;
   supportTelegram: string;
   supportWhatsapp: string;
   supportPhoneVisible: boolean;
   supportTelegramVisible: boolean;
   supportWhatsappVisible: boolean;
+};
+
+export type UserStats = {
+  inTransaction: number;
+  success: number;
+};
+
+export type ReferralMe = {
+  referralCode: string;
+  referralLink: string;
+  referralReward: number;
+  sellCashbackPercent: number;
+  buyCashbackPercent: number;
+  totalTeamRebates: number;
+  todayTeamRebates: number;
+  teamCount: number;
+  team: {
+    _id: string;
+    name: string;
+    email: string;
+    uid: string;
+    joinedAt: string;
+    rewarded: boolean;
+  }[];
 };
 
 /** Public settings — no auth required */
@@ -94,6 +125,15 @@ export async function getPublicSettings(): Promise<PublicSettings> {
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error((data as { message?: string }).message || 'Failed to load settings');
   return data as PublicSettings;
+}
+
+export async function getPaymentQr(): Promise<{ image: string | null }> {
+  const res = await fetch(`${API}/settings/public/payment-qr`, {
+    headers: { 'Content-Type': 'application/json' },
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error((data as { message?: string }).message || 'Failed to load QR');
+  return data as { image: string | null };
 }
 
 export type PaginationMeta = {
