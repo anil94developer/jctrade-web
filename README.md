@@ -56,3 +56,10 @@ npm run build   # NODE_ENV=production + clears Metro cache so EXPO_PUBLIC_* is f
 ```
 
 `dist/` is gitignored; Render builds it on each deploy. If you change API URL in `.env.production` and the bundle still calls `localhost`, run `npm run build` again (the script uses `--clear`).
+
+
+
+
+
+
+npx expo export --platform web
