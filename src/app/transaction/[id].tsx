@@ -34,6 +34,7 @@ export default function TransactionDetailScreen() {
           </View>
           <Detail label="Transaction Hash" value={tx.transactionHash} />
           <Detail label="Name" value={tx.name} />
+          {tx.phone ? <Detail label="Phone" value={tx.phone} /> : null}
           <Detail label="Value" value={`₹ ${tx.value}`} />
           <Detail label="UPI ID on Receive" value={tx.upiId} />
           <Detail label="Date" value={new Date(tx.createdAt).toLocaleString()} />

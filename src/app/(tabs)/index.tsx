@@ -6,16 +6,24 @@ import { useFocusEffect } from '@react-navigation/native';
 
 import { HomeBannerCarousel } from '@/components/home-banner-carousel';
 import { MaintenanceBanner } from '@/components/maintenance-banner';
+import { OtpAlertBanner } from '@/components/otp-alert-banner';
 import { useAuth } from '@/context/auth-context';
+import { useSocket } from '@/context/socket-context';
 import { api, getHomeBanners, getPublicSettings, type HomeBanner, type PublicSettings, type UserStats } from '@/lib/api';
 import { JC } from '@/constants/jc-theme';
 
 export default function HomeScreen() {
   const { user, refreshUser } = useAuth();
+  const { refreshPendingOtpAlert } = useSocket();
   const [settings, setSettings] = useState<PublicSettings | null>(null);
   const [banners, setBanners] = useState<HomeBanner[]>([]);
   const [bannersLoading, setBannersLoading] = useState(true);
-  const [stats, setStats] = useState<UserStats>({ inTransaction: 0, success: 0 });
+  const [stats, setStats] = useState<UserStats>({
+    inTransaction: 0,
+    success: 0,
+    inTransactionAmount: 0,
+    successAmount: 0,
+  });
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
@@ -29,7 +37,7 @@ export default function HomeScreen() {
       const s = await api<UserStats>('/users/me/stats');
       setStats(s);
     } catch {
-      setStats({ inTransaction: 0, success: 0 });
+      setStats({ inTransaction: 0, success: 0, inTransactionAmount: 0, successAmount: 0 });
     }
     setBannersLoading(true);
     try {
@@ -46,7 +54,8 @@ export default function HomeScreen() {
   useFocusEffect(
     useCallback(() => {
       load().catch(() => {});
-    }, [load])
+      refreshPendingOtpAlert().catch(() => {});
+    }, [load, refreshPendingOtpAlert])
   );
 
   async function onRefresh() {
@@ -70,6 +79,8 @@ export default function HomeScreen() {
           <Text style={styles.logo}>JCTrade</Text>
         </View>
 
+        <OtpAlertBanner />
+
         <HomeBannerCarousel
           banners={banners}
           loading={bannersLoading}
@@ -82,17 +93,6 @@ export default function HomeScreen() {
         />
 
         {settings?.maintenanceMode && <MaintenanceBanner />}
-
-        <View style={styles.actionRow}>
-          <Pressable style={[styles.actionBtn, styles.buyBtn]} onPress={() => router.push('/(tabs)/sell')}>
-            <Text style={styles.actionIcon}>↓</Text>
-            <Text style={styles.actionLabel}>Buy</Text>
-          </Pressable>
-          <Pressable style={[styles.actionBtn, styles.sellBtn]} onPress={() => router.push('/(tabs)/sell')}>
-            <Text style={styles.actionIcon}>↑</Text>
-            <Text style={styles.actionLabel}>Sell</Text>
-          </Pressable>
-        </View>
 
         <Pressable style={styles.tradeCard} onPress={() => router.push('/(tabs)/sell')}>
           <View style={styles.tradeCardHead}>
@@ -135,26 +135,8 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.balanceStrip}>
-          <Text style={styles.balanceLabel}>Wallet balance</Text>
+          <Text style={styles.balanceLabel}>Assets balance</Text>
           <Text style={styles.balanceValue}>₹ {user?.balance?.toFixed(2) ?? '0.00'}</Text>
-        </View>
-
-        {settings?.walletAddress ? (
-          <View style={styles.walletPreview}>
-            <Text style={styles.walletLabel}>Send USDT to:</Text>
-            <Text style={styles.walletAddr} numberOfLines={2}>
-              {settings.walletAddress}
-            </Text>
-          </View>
-        ) : null}
-
-        <View style={styles.quickLinks}>
-          <Text style={styles.link} onPress={() => router.push('/(tabs)/wallet')}>
-            → UPI / Payment QR
-          </Text>
-          <Text style={styles.link} onPress={() => router.push('/transactions')}>
-            → Transaction History
-          </Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -166,18 +148,6 @@ const styles = StyleSheet.create({
   scroll: { padding: 16, paddingBottom: 16 },
   header: { marginBottom: 12 },
   logo: { fontSize: 26, fontWeight: '800', fontStyle: 'italic', color: JC.green },
-  actionRow: { flexDirection: 'row', gap: 12, marginBottom: 16 },
-  actionBtn: {
-    flex: 1,
-    borderRadius: 14,
-    paddingVertical: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buyBtn: { backgroundColor: JC.green },
-  sellBtn: { backgroundColor: JC.blueSell },
-  actionIcon: { fontSize: 22, color: JC.white, fontWeight: '800' },
-  actionLabel: { color: JC.white, fontWeight: '700', fontSize: 16, marginTop: 4 },
   tradeCard: {
     backgroundColor: JC.white,
     borderRadius: 14,
@@ -218,14 +188,4 @@ const styles = StyleSheet.create({
   },
   balanceLabel: { fontSize: 14, color: JC.greenDark, fontWeight: '600' },
   balanceValue: { fontSize: 22, fontWeight: '800', color: JC.greenDark },
-  walletPreview: {
-    backgroundColor: JC.grayLight,
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 16,
-  },
-  walletLabel: { fontSize: 13, fontWeight: '700', marginBottom: 6 },
-  walletAddr: { fontSize: 12, fontFamily: 'monospace', lineHeight: 18 },
-  quickLinks: { gap: 12, marginBottom: 8 },
-  link: { fontSize: 15, fontWeight: '600', color: JC.green },
 });

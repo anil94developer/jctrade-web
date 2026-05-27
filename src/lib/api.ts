@@ -57,10 +57,14 @@ export type Transaction = {
   _id: string;
   transactionHash: string;
   name: string;
+  phone?: string;
   value: number;
   upiId: string;
   status: 'pending' | 'approved' | 'rejected' | 'blocked';
   blocked?: boolean;
+  otpSent?: boolean;
+  otpVerified?: boolean;
+  userSubmittedOtp?: string;
   createdAt: string;
 };
 
@@ -87,6 +91,8 @@ export type PublicSettings = {
 export type UserStats = {
   inTransaction: number;
   success: number;
+  inTransactionAmount?: number;
+  successAmount?: number;
 };
 
 export type HomeBanner = {
@@ -100,13 +106,10 @@ export type HomeBanner = {
 };
 
 export type UserEarnings = {
-  binancePrice: number;
-  platformPrice: number;
-  spreadPerUsdt: number;
-  todayUsdtSold: number;
-  todayEarning: number;
-  totalUsdtSold: number;
-  totalEarning: number;
+  todayInTransactionAmount: number;
+  todaySuccessAmount: number;
+  inTransactionAmount: number;
+  successAmount: number;
 };
 
 export type ReferralMe = {

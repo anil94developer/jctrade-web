@@ -4,7 +4,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BottomTabDock } from '@/components/bottom-tab-dock';
 import { getTabBarTotalHeight } from '@/components/custom-tab-bar';
-import { FloatingHomeButton } from '@/components/floating-home-button';
 import { MobileShell } from '@/components/mobile-shell';
 import { useAuth } from '@/context/auth-context';
 import { JC } from '@/constants/jc-theme';
@@ -50,11 +49,10 @@ export default function TabsLayout() {
           }}>
           <Tabs.Screen name="index" options={{ title: 'Home' }} />
           <Tabs.Screen name="sell" options={{ title: 'Order' }} />
-          <Tabs.Screen name="wallet" options={{ title: 'UPI' }} />
           <Tabs.Screen name="team" options={{ title: 'Team' }} />
+          <Tabs.Screen name="support" options={{ title: 'Support' }} />
           <Tabs.Screen name="profile" options={{ title: 'My' }} />
         </Tabs>
-        <FloatingHomeButton />
       </View>
     </MobileShell>
   );

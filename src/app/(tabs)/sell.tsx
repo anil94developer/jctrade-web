@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -16,17 +16,20 @@ import * as Clipboard from 'expo-clipboard';
 
 import { MaintenanceBanner } from '@/components/maintenance-banner';
 import { PaymentQrBlock } from '@/components/payment-qr-block';
+import { useAuth } from '@/context/auth-context';
 import { useToast } from '@/context/toast-context';
 import { api, getPublicSettings, type PublicSettings } from '@/lib/api';
 import { JC } from '@/constants/jc-theme';
 
 export default function SellScreen() {
   const toast = useToast();
+  const { user } = useAuth();
   const [settings, setSettings] = useState<PublicSettings | null>(null);
   const [settingsError, setSettingsError] = useState('');
   const [settingsLoading, setSettingsLoading] = useState(true);
   const [transactionHash, setTransactionHash] = useState('');
   const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
   const [usdtAmount, setUsdtAmount] = useState('');
   const [upiId, setUpiId] = useState('');
   const [loading, setLoading] = useState(false);
@@ -54,6 +57,12 @@ export default function SellScreen() {
     }, [loadSettings])
   );
 
+  useEffect(() => {
+    if (user?.name) setName((prev) => prev || user.name);
+    if (user?.phone) setPhone((prev) => prev || user.phone);
+    if (user?.upiId) setUpiId((prev) => prev || user.upiId);
+  }, [user]);
+
   async function copyAddress() {
     if (!settings?.walletAddress) {
       toast.showError('Admin has not set wallet address yet');
@@ -72,8 +81,8 @@ export default function SellScreen() {
       toast.showError('System is under maintenance. Try again later.');
       return;
     }
-    if (!transactionHash.trim() || !name.trim() || !usdtAmount.trim() || !upiId.trim()) {
-      toast.showError('Fill all fields: hash, name, USDT amount, UPI ID');
+    if (!transactionHash.trim() || !name.trim() || !phone.trim() || !usdtAmount.trim() || !upiId.trim()) {
+      toast.showError('Fill all fields: hash, name, phone, USDT amount, UPI ID');
       return;
     }
     const usdt = Number(usdtAmount);
@@ -90,6 +99,7 @@ export default function SellScreen() {
         body: JSON.stringify({
           transactionHash: transactionHash.trim(),
           name: name.trim(),
+          phone: phone.trim(),
           usdtAmount: usdt,
           value: inrValue,
           upiId: upiId.trim(),
@@ -98,8 +108,9 @@ export default function SellScreen() {
       toast.showSuccess('Sell request submitted successfully');
       setTransactionHash('');
       setName('');
+      setPhone(user?.phone || '');
       setUsdtAmount('');
-      setUpiId('');
+      setUpiId(user?.upiId || '');
     } catch (err) {
       toast.showError(err instanceof Error ? err.message : 'Failed to submit request');
     } finally {
@@ -133,7 +144,7 @@ export default function SellScreen() {
           </View>
 
           <PaymentQrBlock
-            title="Scan QR to pay (UPI)"
+            title="Scan QR to pay"
             hint="After payment, send USDT to the wallet below and fill the form"
           />
 
@@ -178,6 +189,13 @@ export default function SellScreen() {
 
           <Field label="Transaction Hash" value={transactionHash} onChangeText={setTransactionHash} placeholder="0x..." />
           <Field label="Name" value={name} onChangeText={setName} placeholder="Your name" />
+          <Field
+            label="Phone Number"
+            value={phone}
+            onChangeText={setPhone}
+            placeholder="10-digit mobile"
+            keyboardType="phone-pad"
+          />
           <Field
             label="Sell USDT amount"
             value={usdtAmount}
@@ -224,7 +242,7 @@ function Field({
   value: string;
   onChangeText: (t: string) => void;
   placeholder?: string;
-  keyboardType?: 'default' | 'decimal-pad';
+  keyboardType?: 'default' | 'decimal-pad' | 'phone-pad';
 }) {
   return (
     <View style={fieldStyles.wrap}>

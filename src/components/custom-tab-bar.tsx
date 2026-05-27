@@ -7,18 +7,18 @@ import {
   TabIconHome,
   TabIconOrder,
   TabIconProfile,
+  TabIconSupport,
   TabIconTeam,
-  TabIconUpi,
 } from '@/components/tab-bar-icons';
 import { JC } from '@/constants/jc-theme';
 
 type IconRender = (p: { color: string }) => ReactNode;
 
-const TAB_CONFIG: Record<string, { label: string; Icon: IconRender; center?: boolean }> = {
+const TAB_CONFIG: Record<string, { label: string; Icon: IconRender }> = {
   index: { label: 'Home', Icon: ({ color }) => <TabIconHome color={color} /> },
   sell: { label: 'Order', Icon: ({ color }) => <TabIconOrder color={color} /> },
-  wallet: { label: 'UPI', Icon: ({ color }) => <TabIconUpi color={color} />, center: true },
   team: { label: 'Team', Icon: ({ color }) => <TabIconTeam color={color} /> },
+  support: { label: 'Support', Icon: ({ color }) => <TabIconSupport color={color} /> },
   profile: { label: 'My', Icon: ({ color }) => <TabIconProfile color={color} /> },
 };
 
@@ -44,7 +44,6 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
               Icon: ({ color }: { color: string }) => <TabIconProfile color={color} />,
             } satisfies { label: string; Icon: IconRender });
           const color = focused ? JC.green : JC.gray;
-          const isCenter = config.center;
 
           const onPress = () => {
             const event = navigation.emit({
@@ -61,22 +60,14 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
             <Pressable
               key={route.key}
               onPress={onPress}
-              style={[styles.tab, isCenter && styles.tabCenter]}
+              style={styles.tab}
               accessibilityRole="button"
               accessibilityState={focused ? { selected: true } : {}}
               accessibilityLabel={config.label}>
-              {isCenter ? (
-                <View style={[styles.centerBtn, focused && styles.centerBtnActive]}>
-                  {config.Icon({ color: JC.white })}
-                </View>
-              ) : (
-                <View style={[styles.iconWrap, focused && styles.iconWrapActive]}>
-                  {config.Icon({ color })}
-                </View>
-              )}
-              <Text
-                style={[styles.label, focused && styles.labelActive, isCenter && styles.labelCenter]}
-                numberOfLines={1}>
+              <View style={[styles.iconWrap, focused && styles.iconWrapActive]}>
+                {config.Icon({ color })}
+              </View>
+              <Text style={[styles.label, focused && styles.labelActive]} numberOfLines={1}>
                 {config.label}
               </Text>
             </Pressable>
@@ -118,7 +109,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 2,
     height: TAB_BAR_HEIGHT,
   },
-  tabCenter: {},
   iconWrap: {
     width: 40,
     height: 32,
@@ -128,26 +118,6 @@ const styles = StyleSheet.create({
   },
   iconWrapActive: {
     backgroundColor: JC.greenLight,
-  },
-  centerBtn: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
-    backgroundColor: JC.green,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...(Platform.OS === 'web'
-      ? { boxShadow: '0 4px 12px rgba(27,138,74,0.45)' as unknown as undefined }
-      : {
-          elevation: 8,
-          shadowColor: JC.green,
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.35,
-          shadowRadius: 6,
-        }),
-  },
-  centerBtnActive: {
-    backgroundColor: JC.greenDark,
   },
   label: {
     fontSize: 11,
@@ -160,8 +130,5 @@ const styles = StyleSheet.create({
   labelActive: {
     color: JC.green,
     fontWeight: '700',
-  },
-  labelCenter: {
-    marginTop: 6,
   },
 });

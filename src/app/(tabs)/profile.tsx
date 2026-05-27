@@ -60,36 +60,21 @@ export default function ProfileScreen() {
 
         <View style={styles.earnCard}>
           <View style={styles.earnHalf}>
-            <Text style={styles.earnLabel}>Today&apos;s Earn</Text>
-            <Text style={styles.earnValue}>₹ {(earnings?.todayEarning ?? 0).toFixed(2)}</Text>
+            <Text style={styles.earnLabel}>In Transaction</Text>
+            <Text style={styles.earnValue}>₹ {(earnings?.inTransactionAmount ?? 0).toFixed(2)}</Text>
+            <Text style={styles.earnHint}>Pending admin approval</Text>
           </View>
           <View style={styles.divider} />
           <View style={styles.earnHalf}>
-            <Text style={styles.earnLabel}>Total Earn</Text>
-            <Text style={styles.earnValue}>₹ {(earnings?.totalEarning ?? 0).toFixed(2)}</Text>
+            <Text style={styles.earnLabel}>Success</Text>
+            <Text style={styles.earnValue}>₹ {(earnings?.successAmount ?? 0).toFixed(2)}</Text>
+            <Text style={styles.earnHint}>Approved transactions</Text>
           </View>
         </View>
-
-        {earnings ? (
-          <View style={styles.rateBox}>
-            <Text style={styles.rateTitle}>Earning formula (approved sells)</Text>
-            <Text style={styles.rateLine}>
-              Binance ₹{earnings.binancePrice.toFixed(2)} · Platform ₹{earnings.platformPrice.toFixed(2)} · Spread ₹
-              {earnings.spreadPerUsdt.toFixed(2)}/USDT
-            </Text>
-            <Text style={styles.rateLine}>
-              Today: {earnings.todayUsdtSold.toFixed(2)} USDT × ₹{earnings.spreadPerUsdt.toFixed(2)} = ₹
-              {earnings.todayEarning.toFixed(2)}
-            </Text>
-          </View>
-        ) : null}
 
         <Text style={styles.section}>My Orders</Text>
         <View style={styles.ordersRow}>
           <OrderIcon label="Balance" color="#FF9800" emoji="💰" />
-          <Pressable onPress={() => router.push('/wallet-history')}>
-            <OrderIcon label="Earn Record" color="#4CAF50" emoji="₹" />
-          </Pressable>
           <Pressable onPress={() => router.push('/transactions')}>
             <OrderIcon label="Sell Order" color="#F44336" emoji="📤" />
           </Pressable>
@@ -103,11 +88,6 @@ export default function ProfileScreen() {
         <Pressable style={styles.menuItem} onPress={() => router.push('/transactions')}>
           <Text style={styles.menuEmoji}>📋</Text>
           <Text style={styles.menuText}>Transaction History</Text>
-          <Text style={styles.chevron}>›</Text>
-        </Pressable>
-        <Pressable style={styles.menuItem} onPress={() => router.push('/wallet-history')}>
-          <Text style={styles.menuEmoji}>💳</Text>
-          <Text style={styles.menuText}>Wallet History</Text>
           <Text style={styles.chevron}>›</Text>
         </Pressable>
         <Pressable style={styles.menuItem} onPress={() => router.push('/(tabs)/team' as '/(tabs)/sell')}>
@@ -192,16 +172,7 @@ const styles = StyleSheet.create({
   divider: { width: 1, backgroundColor: 'rgba(0,0,0,0.15)' },
   earnLabel: { fontSize: 13, color: '#333' },
   earnValue: { fontSize: 22, fontWeight: '800', marginTop: 6 },
-  rateBox: {
-    backgroundColor: JC.greenLight,
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: JC.greenMuted,
-  },
-  rateTitle: { fontSize: 13, fontWeight: '700', color: JC.greenDark, marginBottom: 8 },
-  rateLine: { fontSize: 12, color: '#444', lineHeight: 18, marginBottom: 4 },
+  earnHint: { fontSize: 11, color: '#555', marginTop: 4, textAlign: 'center' },
   section: { fontSize: 17, fontWeight: '700', marginBottom: 14 },
   ordersRow: { flexDirection: 'row', justifyContent: 'space-around', marginBottom: 24 },
   orderItem: { alignItems: 'center', gap: 8 },

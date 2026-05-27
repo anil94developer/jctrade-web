@@ -6,6 +6,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { GoogleProvider } from '@/components/google-provider';
 import { AuthProvider, useAuth } from '@/context/auth-context';
+import { SocketProvider } from '@/context/socket-context';
 import { ToastProvider } from '@/context/toast-context';
 import { JC } from '@/constants/jc-theme';
 
@@ -13,7 +14,6 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
 
 const PROTECTED_SEGMENTS = new Set([
   '(tabs)',
-  'wallet-history',
   'transactions',
   'transaction',
   'profile-edit',
@@ -49,6 +49,7 @@ export default function RootLayout() {
       <GoogleProvider>
         <AuthProvider>
           <ToastProvider>
+          <SocketProvider>
           <AuthNavigationGuard />
         <StatusBar style="dark" />
         <Stack
@@ -59,12 +60,12 @@ export default function RootLayout() {
         <Stack.Screen name="index" />
         <Stack.Screen name="login" />
         <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="wallet-history" options={{ presentation: 'card' }} />
         <Stack.Screen name="transactions" options={{ presentation: 'card' }} />
         <Stack.Screen name="transaction/[id]" options={{ presentation: 'card' }} />
         <Stack.Screen name="profile-edit" options={{ presentation: 'card' }} />
         <Stack.Screen name="support" options={{ presentation: 'card' }} />
       </Stack>
+          </SocketProvider>
           </ToastProvider>
         </AuthProvider>
       </GoogleProvider>
