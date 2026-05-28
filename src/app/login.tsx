@@ -49,6 +49,14 @@ function getTokenFromUrl(): string {
   return String(params.get('token') || '').trim();
 }
 
+function isWebViewSession(): boolean {
+  if (typeof window === 'undefined') return false;
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('webview') === '1') return true;
+  const ua = window.navigator.userAgent || '';
+  return /\bwv\b/.test(ua) || /;\s*wv\)/.test(ua);
+}
+
 function useGoogleSignIn() {
   const { signIn, token } = useAuth();
   const toast = useToast();
@@ -109,6 +117,7 @@ function useGoogleSignIn() {
         goHome();
       } catch (err) {
         toast.showError(err instanceof Error ? err.message : 'Login failed');
+        throw err;
       } finally {
         setLoading(false);
       }
@@ -122,35 +131,53 @@ function useGoogleSignIn() {
 function WebLogin() {
   const { loading, handleGoogleToken, handleWebviewToken } = useGoogleSignIn();
   const toast = useToast();
-  const handledRef = useRef(false);
+  const tokenAttemptedRef = useRef<string | null>(null);
   const origins = getWebOrigins();
   const incomingToken = getTokenFromUrl();
+  const webViewMode = isWebViewSession();
   /** GSI injects DOM that never matches SSR — mount only after hydration. */
   const [googleReady, setGoogleReady] = useState(false);
+  const [tokenLoginFailed, setTokenLoginFailed] = useState(false);
   useEffect(() => {
     setGoogleReady(true);
   }, []);
 
   useEffect(() => {
-    if (!incomingToken || handledRef.current) return;
-    handledRef.current = true;
-    handleWebviewToken(incomingToken);
+    if (!incomingToken) return;
+    if (tokenAttemptedRef.current === incomingToken) return;
+    tokenAttemptedRef.current = incomingToken;
+    setTokenLoginFailed(false);
+    handleWebviewToken(incomingToken).catch(() => {
+      setTokenLoginFailed(true);
+    });
   }, [incomingToken, handleWebviewToken]);
 
   return (
     <LoginLayout>
       <View style={styles.googleWrap}>
-        {loading || !googleReady ? (
+        {incomingToken ? (
+          <View style={styles.tokenInfoWrap}>
+            {loading ? (
+              <ActivityIndicator color={JC.black} size="large" />
+            ) : (
+              <Text style={styles.tokenInfoText}>
+                {tokenLoginFailed
+                  ? 'Auto login failed. Please send a valid token from app.'
+                  : 'Signing you in...'}
+              </Text>
+            )}
+          </View>
+        ) : loading || !googleReady ? (
           <ActivityIndicator color={JC.black} size="large" />
+        ) : webViewMode ? (
+          <Text style={styles.tokenInfoText}>Please continue login from app token.</Text>
         ) : (
           <GoogleLogin
             onSuccess={(res) => {
-              if (handledRef.current) return;
               if (!res.credential) {
                 toast.showError('Google sign-in failed. Check Authorized JavaScript origins in Google Console.');
                 return;
               }
-              handledRef.current = true;
               handleGoogleToken(res.credential);
             }}
             onError={() => {
@@ -260,6 +287,13 @@ const styles = StyleSheet.create({
   welcome: { fontSize: 20, fontWeight: '700', marginTop: 20, color: JC.black },
   sub: { fontSize: 14, color: JC.gray, marginTop: 8, marginBottom: 28, textAlign: 'center' },
   googleWrap: { width: 300, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
+  tokenInfoWrap: { width: 300, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
+  tokenInfoText: {
+    fontSize: 13,
+    color: JC.gray,
+    textAlign: 'center',
+    lineHeight: 18,
+  },
   googleBtn: {
     flexDirection: 'row',
     alignItems: 'center',
