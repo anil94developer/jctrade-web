@@ -44,6 +44,17 @@ export default function RootLayout() {
     SplashScreen.hideAsync().catch(() => {});
   }, []);
 
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof document === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const ua = navigator.userAgent || '';
+    const isAndroidWebView = /\bwv\b/.test(ua) || /;\s*wv\)/.test(ua);
+    const isExplicitWebView = params.get('webview') === '1';
+    const isWebView = isAndroidWebView || isExplicitWebView;
+    document.documentElement.classList.toggle('is-webview', isWebView);
+    document.body.classList.toggle('is-webview', isWebView);
+  }, []);
+
   return (
     <SafeAreaProvider>
       <GoogleProvider>

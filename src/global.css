@@ -33,3 +33,8 @@ body {
   height: auto !important;
   min-height: 0 !important;
 }
+
+/* Android WebView can misplace fixed bottom bars; dock to app container instead. */
+.is-webview #jc-tab-bar {
+  position: absolute !important;
+}

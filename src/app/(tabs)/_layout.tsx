@@ -1,5 +1,5 @@
 import { Tabs, Redirect } from 'expo-router';
-import { Platform, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BottomTabDock } from '@/components/bottom-tab-dock';
@@ -28,7 +28,7 @@ export default function TabsLayout() {
               paddingBottom: tabBarHeight,
             },
             tabBarStyle: {
-              position: Platform.OS === 'web' ? 'fixed' : 'absolute',
+              position: 'absolute',
               bottom: 0,
               left: 0,
               right: 0,
