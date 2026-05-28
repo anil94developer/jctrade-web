@@ -13,16 +13,18 @@ export default function TabsLayout() {
   const insets = useSafeAreaInsets();
   const tabBarHeight = getTabBarTotalHeight(insets.bottom);
 
-  if (!loading && !token) return <Redirect href="/login" />;
+  if (!loading && !token) {
+    return <Redirect href="/login" />;
+  }
 
   return (
     <MobileShell>
       <View style={styles.page}>
         <Tabs
+          initialRouteName="home"
           tabBar={(props) => <BottomTabDock {...props} />}
           screenOptions={{
             headerShown: false,
-            tabBarPosition: 'bottom',
             sceneStyle: {
               backgroundColor: JC.white,
               paddingBottom: tabBarHeight,
@@ -33,25 +35,45 @@ export default function TabsLayout() {
               left: 0,
               right: 0,
               height: tabBarHeight,
-              width: '100%',
-              maxWidth: JC.maxWidth,
-              alignSelf: 'center',
-              marginLeft: 'auto',
-              marginRight: 'auto',
-              paddingTop: 0,
-              paddingBottom: 0,
               borderTopWidth: 0,
               backgroundColor: 'transparent',
               elevation: 0,
-              zIndex: 99999,
-              overflow: 'visible',
             },
           }}>
-          <Tabs.Screen name="index" options={{ title: 'Home' }} />
-          <Tabs.Screen name="sell" options={{ title: 'Order' }} />
-          <Tabs.Screen name="team" options={{ title: 'Team' }} />
-          <Tabs.Screen name="support" options={{ title: 'Support' }} />
-          <Tabs.Screen name="profile" options={{ title: 'My' }} />
+          <Tabs.Screen
+            name="home"
+            options={{
+              title: 'Home',
+            }}
+          />
+
+          <Tabs.Screen
+            name="sell"
+            options={{
+              title: 'Order',
+            }}
+          />
+
+          <Tabs.Screen
+            name="team"
+            options={{
+              title: 'Team',
+            }}
+          />
+
+          <Tabs.Screen
+            name="support"
+            options={{
+              title: 'Support',
+            }}
+          />
+
+          <Tabs.Screen
+            name="profile"
+            options={{
+              title: 'My',
+            }}
+          />
         </Tabs>
       </View>
     </MobileShell>
@@ -62,9 +84,7 @@ const styles = StyleSheet.create({
   page: {
     flex: 1,
     width: '100%',
-    maxWidth: JC.maxWidth,
-    alignSelf: 'center',
-    backgroundColor: JC.white,
     position: 'relative',
+    backgroundColor: JC.white,
   },
 });

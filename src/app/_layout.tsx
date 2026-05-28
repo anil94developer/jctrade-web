@@ -32,7 +32,7 @@ function AuthNavigationGuard() {
       router.replace('/login');
     }
     if (token && root === 'login') {
-      router.replace('/(tabs)');
+      router.replace('/(tabs)/home');
     }
   }, [token, loading, segments, router]);
 
@@ -71,10 +71,11 @@ export default function RootLayout() {
         <Stack.Screen name="index" />
         <Stack.Screen name="login" />
         <Stack.Screen name="(tabs)" />
+      
+        
         <Stack.Screen name="transactions" options={{ presentation: 'card' }} />
         <Stack.Screen name="transaction/[id]" options={{ presentation: 'card' }} />
         <Stack.Screen name="profile-edit" options={{ presentation: 'card' }} />
-        <Stack.Screen name="support" options={{ presentation: 'card' }} />
       </Stack>
           </SocketProvider>
           </ToastProvider>

@@ -3,6 +3,7 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useS
 
 import { api, type User } from '@/lib/api';
 import { AUTH_TOKEN_KEY, AUTH_USER_KEY, clearAuthStorage } from '@/lib/auth-storage';
+import { notifyNativeLogout } from '@/lib/webview-bridge';
 
 type AuthContextValue = {
   user: User | null;
@@ -58,6 +59,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       // Still logged out in memory even if storage clear fails
     }
+    notifyNativeLogout();
   }, []);
 
   const value = useMemo(

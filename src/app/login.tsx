@@ -65,12 +65,12 @@ function useGoogleSignIn() {
 
   useEffect(() => {
     if (token) {
-      router.replace('/(tabs)');
+      router.replace('/(tabs)/home');
     }
   }, [token]);
 
   const goHome = useCallback(() => {
-    router.replace('/(tabs)');
+    router.replace('/(tabs)/home');
   }, []);
 
   const handleGoogleToken = useCallback(
@@ -155,7 +155,7 @@ function WebLogin() {
   return (
     <LoginLayout>
       <View style={styles.googleWrap}>
-        {/* {incomingToken ? (
+        {incomingToken ? (
           <View style={styles.tokenInfoWrap}>
             {loading ? (
               <ActivityIndicator color={JC.black} size="large" />
@@ -171,7 +171,7 @@ function WebLogin() {
           <ActivityIndicator color={JC.black} size="large" />
         ) : webViewMode ? (
           <Text style={styles.tokenInfoText}>Please continue login from app token.</Text>
-        ) : ( */}
+        ) : (
           <GoogleLogin
             onSuccess={(res) => {
               if (!res.credential) {
@@ -193,7 +193,7 @@ function WebLogin() {
             shape="rectangular"
             width={300}
           />
-        {/* )} */}
+        )}
       </View>
       {/* <Text style={styles.warn}>
         Open app at http://localhost:8081 (not IP address)

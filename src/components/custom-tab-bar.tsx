@@ -15,7 +15,7 @@ import { JC } from '@/constants/jc-theme';
 type IconRender = (p: { color: string }) => ReactNode;
 
 const TAB_CONFIG: Record<string, { label: string; Icon: IconRender }> = {
-  index: { label: 'Home', Icon: ({ color }) => <TabIconHome color={color} /> },
+  home: { label: 'Home', Icon: ({ color }) => <TabIconHome color={color} /> },
   sell: { label: 'Order', Icon: ({ color }) => <TabIconOrder color={color} /> },
   team: { label: 'Team', Icon: ({ color }) => <TabIconTeam color={color} /> },
   support: { label: 'Support', Icon: ({ color }) => <TabIconSupport color={color} /> },

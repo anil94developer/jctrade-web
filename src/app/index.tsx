@@ -16,7 +16,7 @@ export default function Index() {
     );
   }
 
-  if (token) return <Redirect href="/(tabs)" />;
+  if (token) return <Redirect href="/(tabs)/home" />;
   return <Redirect href="/login" />;
 }
 

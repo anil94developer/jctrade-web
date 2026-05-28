@@ -79,6 +79,25 @@ export default function HomeScreen() {
           <Text style={styles.logo}>JCTrade</Text>
         </View>
 
+        {/* <View style={styles.menuGrid}>
+          <Pressable style={styles.menuItem} onPress={() => router.push('/sell')}>
+            <Text style={styles.menuItemTitle}>Order</Text>
+            <Text style={styles.menuItemSub}>Sell USDT</Text>
+          </Pressable>
+          <Pressable style={styles.menuItem} onPress={() => router.push('/team')}>
+            <Text style={styles.menuItemTitle}>Team</Text>
+            <Text style={styles.menuItemSub}>Referral</Text>
+          </Pressable>
+          <Pressable style={styles.menuItem} onPress={() => router.push('/support')}>
+            <Text style={styles.menuItemTitle}>Support</Text>
+            <Text style={styles.menuItemSub}>Help Center</Text>
+          </Pressable>
+          <Pressable style={styles.menuItem} onPress={() => router.push('/profile')}>
+            <Text style={styles.menuItemTitle}>Profile</Text>
+            <Text style={styles.menuItemSub}>My Account</Text>
+          </Pressable>
+        </View> */}
+
         <OtpAlertBanner />
 
         <HomeBannerCarousel
@@ -94,7 +113,7 @@ export default function HomeScreen() {
 
         {settings?.maintenanceMode && <MaintenanceBanner />}
 
-        <Pressable style={styles.tradeCard} onPress={() => router.push('/(tabs)/sell')}>
+        <Pressable style={styles.tradeCard} onPress={() => router.push('/sell')}>
           <View style={styles.tradeCardHead}>
             <Text style={styles.tradeTitle}>Sell USDT by INR</Text>
             <Text style={styles.tradeArrow}>›</Text>
@@ -112,7 +131,7 @@ export default function HomeScreen() {
           </View>
         </Pressable>
 
-        <Pressable style={styles.tradeCard} onPress={() => router.push('/(tabs)/team' as '/(tabs)/sell')}>
+        <Pressable style={styles.tradeCard} onPress={() => router.push('/team')}>
           <View style={styles.tradeCardHead}>
             <Text style={styles.tradeTitle}>Join by Rupee / Referral</Text>
             <Text style={styles.tradeArrow}>›</Text>
@@ -148,6 +167,18 @@ const styles = StyleSheet.create({
   scroll: { padding: 16, paddingBottom: 16 },
   header: { marginBottom: 12 },
   logo: { fontSize: 26, fontWeight: '800', fontStyle: 'italic', color: JC.green },
+  menuGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 14 },
+  menuItem: {
+    width: '48%',
+    backgroundColor: JC.grayLight,
+    borderWidth: 1,
+    borderColor: JC.grayBorder,
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+  },
+  menuItemTitle: { fontSize: 14, fontWeight: '700', color: JC.black },
+  menuItemSub: { fontSize: 12, color: JC.gray, marginTop: 4 },
   tradeCard: {
     backgroundColor: JC.white,
     borderRadius: 14,

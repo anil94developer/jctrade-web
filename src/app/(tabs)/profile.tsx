@@ -90,7 +90,7 @@ export default function ProfileScreen() {
           <Text style={styles.menuText}>Transaction History</Text>
           <Text style={styles.chevron}>›</Text>
         </Pressable>
-        <Pressable style={styles.menuItem} onPress={() => router.push('/(tabs)/team' as '/(tabs)/sell')}>
+        <Pressable style={styles.menuItem} onPress={() => router.push('/team')}>
           <Text style={styles.menuEmoji}>👥</Text>
           <Text style={styles.menuText}>Team & Referrals</Text>
           <Text style={styles.chevron}>›</Text>
