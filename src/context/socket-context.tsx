@@ -1,4 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { Platform } from 'react-native';
 import { io, type Socket } from 'socket.io-client';
 
 import { useAuth } from '@/context/auth-context';
@@ -26,6 +27,14 @@ const SocketContext = createContext<SocketContextValue | null>(null);
 
 const DEFAULT_OTP_MESSAGE =
   'You received an OTP on your mobile number. Open Sell Orders and enter the OTP.';
+
+function isWebViewSession() {
+  if (Platform.OS !== 'web' || typeof window === 'undefined') return false;
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('webview') === '1') return true;
+  const ua = navigator.userAgent || '';
+  return /\bwv\b/.test(ua) || /;\s*wv\)/.test(ua);
+}
 
 export function SocketProvider({ children }: { children: React.ReactNode }) {
   const { token } = useAuth();
@@ -89,10 +98,22 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const s = io(getSocketUrl(), {
-      auth: { token },
-      transports: ['websocket', 'polling'],
-    });
+    if (isWebViewSession()) {
+      // WebView already polls APIs; skip socket bootstrap to avoid runtime blank-screen crashes.
+      setConnected(false);
+      return;
+    }
+
+    let s: Socket;
+    try {
+      s = io(getSocketUrl(), {
+        auth: { token },
+        transports: ['websocket', 'polling'],
+      });
+    } catch {
+      setConnected(false);
+      return;
+    }
 
     s.on('connect', () => {
       setConnected(true);

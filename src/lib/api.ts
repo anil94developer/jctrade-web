@@ -20,7 +20,7 @@ function reachabilityHint(): string {
   const host = window.location.hostname;
   const usingLocalApi = API.includes('localhost') || API.includes('127.0.0.1');
   if (usingLocalApi && host !== 'localhost' && host !== '127.0.0.1') {
-    return ` Rebuild the app with EXPO_PUBLIC_API_URL=https://your-api.onrender.com/api (current: ${API}).`;
+    return ` Rebuild the app with EXPO_PUBLIC_API_URL=https://jctrade-server-1.onrender.com/api (current: ${API}).`;
   }
   return '';
 }
