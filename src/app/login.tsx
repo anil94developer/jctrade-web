@@ -43,6 +43,12 @@ function getReferralCodeFromUrl(): string {
   return String(params.get('ref') || params.get('referralCode') || '').trim();
 }
 
+function getTokenFromUrl(): string {
+  if (typeof window === 'undefined') return '';
+  const params = new URLSearchParams(window.location.search);
+  return String(params.get('token') || '').trim();
+}
+
 function useGoogleSignIn() {
   const { signIn, token } = useAuth();
   const toast = useToast();
@@ -85,19 +91,51 @@ function useGoogleSignIn() {
     [signIn, loading, goHome, toast, referralCode]
   );
 
-  return { loading, handleGoogleToken };
+  const handleWebviewToken = useCallback(
+    async (webviewToken: string) => {
+      if (!webviewToken || loading) return;
+      setLoading(true);
+      try {
+        const data = await api<{ token: string; user: User }>('/auth/token-login', {
+          method: 'POST',
+          body: JSON.stringify({
+            token: webviewToken,
+            referralCode: referralCode || undefined,
+            ref: referralCode || undefined,
+          }),
+        });
+        await signIn(data.token, data.user);
+        toast.showSuccess('Login successful');
+        goHome();
+      } catch (err) {
+        toast.showError(err instanceof Error ? err.message : 'Login failed');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [signIn, loading, goHome, toast, referralCode]
+  );
+
+  return { loading, handleGoogleToken, handleWebviewToken };
 }
 
 function WebLogin() {
-  const { loading, handleGoogleToken } = useGoogleSignIn();
+  const { loading, handleGoogleToken, handleWebviewToken } = useGoogleSignIn();
   const toast = useToast();
   const handledRef = useRef(false);
   const origins = getWebOrigins();
+  const incomingToken = getTokenFromUrl();
   /** GSI injects DOM that never matches SSR — mount only after hydration. */
   const [googleReady, setGoogleReady] = useState(false);
   useEffect(() => {
     setGoogleReady(true);
   }, []);
+
+  useEffect(() => {
+    if (!incomingToken || handledRef.current) return;
+    handledRef.current = true;
+    handleWebviewToken(incomingToken);
+  }, [incomingToken, handleWebviewToken]);
 
   return (
     <LoginLayout>
