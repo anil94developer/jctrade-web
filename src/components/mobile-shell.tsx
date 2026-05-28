@@ -27,6 +27,7 @@ const styles = StyleSheet.create({
     ...(Platform.OS === 'web'
       ? {
           boxShadow: '0 0 24px rgba(0,0,0,0.08)' as unknown as undefined,
+          height: '100vh' as unknown as number,
           minHeight: '100dvh' as unknown as number,
           overflow: 'visible' as unknown as undefined,
         }

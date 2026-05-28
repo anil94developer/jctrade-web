@@ -1,8 +1,19 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
-// Web on same machine uses localhost; physical device needs your PC IP in .env
-const API = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:4000/api';
+function getDefaultApiBase() {
+  if (Platform.OS === 'web' && typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    const isLocalHost = host === 'localhost' || host === '127.0.0.1';
+    if (isLocalHost) return 'http://localhost:4000/api';
+    // Hosted web/webview should call the same deployed origin.
+    return `${window.location.origin}/api`;
+  }
+  // Native app should provide EXPO_PUBLIC_API_URL explicitly.
+  return 'http://localhost:4000/api';
+}
+
+const API = process.env.EXPO_PUBLIC_API_URL || getDefaultApiBase();
 
 function reachabilityHint(): string {
   if (Platform.OS !== 'web' || typeof window === 'undefined') return '';
