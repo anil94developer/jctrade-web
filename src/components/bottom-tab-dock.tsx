@@ -15,10 +15,15 @@ export function BottomTabDock(props: BottomTabBarProps) {
 
 const styles = StyleSheet.create({
   dock: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     width: '100%',
     maxWidth: JC.maxWidth,
     alignSelf: 'center',
     backgroundColor: JC.white,
+    zIndex: 99999,
     ...(Platform.OS === 'web'
       ? {
           boxShadow: '0 -2px 12px rgba(0,0,0,0.1)' as unknown as undefined,
