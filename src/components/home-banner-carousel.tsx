@@ -37,7 +37,8 @@ export function HomeBannerCarousel({ banners, loading, fallbackTitle, fallbackSu
   const scrollRef = useRef<ScrollView>(null);
   const [index, setIndex] = useState(0);
   const { width: windowWidth } = useWindowDimensions();
-  const slideWidth = Math.min(windowWidth, JC.maxWidth) - 32;
+  const contentWidth = Math.max(320, Math.min(windowWidth || 0, JC.maxWidth));
+  const slideWidth = Math.max(1, contentWidth - 32);
 
   const slides =
     banners.length > 0
